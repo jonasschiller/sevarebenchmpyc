@@ -85,8 +85,10 @@ for i in $(seq 2 $((partysize+1))); do
     partystring+=" -P 10.10."$network"."$i":23000"
 done
 
+
+bash "$REPO_DIR"/experiments/multiplication/generatepinput.sh "$size" "$partysize" "$etype"
 # run the SMC protocol
-$skip || /usr/bin/python3 /root/sevarebenchmpyc/experiments/$experiment $partystring -I $player &> "$log" || success=false
+$skip || /usr/bin/python3 /root/sevarebenchmpyc/experiments/multiplication/$experiment $partystring -I $player &> "$log" || success=false
 
 pos_upload "$log"
 

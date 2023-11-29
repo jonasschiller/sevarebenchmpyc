@@ -90,22 +90,7 @@ PIDS=()
 # on the same switch.   Generate random number  1 < number < 255
 NETWORK=$((RANDOM%253+2))
 
- # Experiment run summary  information output
-SUMMARYFILE="$EXPORTPATH/run-summary.dat"
-mkdir -p "$EXPORTPATH" && rm -rf "$SUMMARYFILE"
-{
-    echo "  Setup:"
-    echo "    Experiment = $EXPERIMENT $ETYPE"
-    echo "    Nodes = ${NODES[*]}"
-    echo "    Internal network = 10.10.$NETWORK.0/24"
-    echo "    Inputs = ${INPUTS[*]}"
-    echo "    Testtypes:"
-    for type in "${TTYPES[@]}"; do
-        declare -n ttypes="${type}"
-        echo -e "      $type\t= ${ttypes[*]}"
-    done
-    echo "  Summary file = $SUMMARYFILE"
-    } | tee "$SUMMARYFILE"
+
 
 # Parsing inspired from https://stackoverflow.com/a/29754866
 # https://gist.github.com/74e9875d5ab0a2bc1010447f1bee5d0a
@@ -145,4 +130,21 @@ setParameters() {
     # node already in use check
     #nodetasks=$(pgrep -facu "$(id -u)" "${NODES[0]}")
     #[ "$nodetasks" -gt 10 ] && error $LINENO "${FUNCNAME[0]}(): it appears host ${NODES[0]} is currently in use"
+
+     # Experiment run summary  information output
+    SUMMARYFILE="$EXPORTPATH/run-summary.dat"
+    mkdir -p "$EXPORTPATH" && rm -rf "$SUMMARYFILE"
+    {
+    echo "  Setup:"
+    echo "    Experiment = $EXPERIMENT $ETYPE"
+    echo "    Nodes = ${NODES[*]}"
+    echo "    Internal network = 10.10.$NETWORK.0/24"
+    echo "    Inputs = ${INPUTS[*]}"
+    echo "    Testtypes:"
+    for type in "${TTYPES[@]}"; do
+        declare -n ttypes="${type}"
+        echo -e "      $type\t= ${ttypes[*]}"
+    done
+    echo "  Summary file = $SUMMARYFILE"
+    } | tee "$SUMMARYFILE"
 }
