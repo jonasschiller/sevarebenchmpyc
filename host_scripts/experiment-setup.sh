@@ -143,7 +143,7 @@ pos_upload pinglog
 
 # log link test
 # shellcheck source=../tools/speedtest.sh
-source "$REPO2_DIR"/tools/speedtest.sh
+source "$REPO_DIR"/tools/speedtest.sh
 
 {
 	startserver
@@ -179,51 +179,10 @@ pos_upload speedtest
 #### compile libaries and prepare experiments
 #######
 
-
-# handle yao's -O protocol Variant
-protocols="${protocols//yaoO/yao}"
-
-cp "$REPO2_DIR"/experiments/"$EXPERIMENT"/experiment.mpc \
-	"$REPO_DIR"/Programs/Source/
-chmod +x "$REPO2_DIR"/helpers/* "$REPO2_DIR"/experiments/"$EXPERIMENT"/*
+chmod +x "$REPO_DIR"/helpers/* "$REPO_DIR"/experiments/"$EXPERIMENT"/*
 cd "$REPO_DIR"
 
-tar -xf "$REPO2_DIR"/helpers/SSLcerts.tar
-
-# activate BMR MultiParty
-sed -i 's/#define MAX_N_PARTIES 3/\/\/#define MAX_N_PARTIES 3/' BMR/config.h
-
-# add custom compile flags
-compflags=$(pos_get_variable compflags --from-global)
-
-if [ "$compflags" != None ]; then
-	if [ -f CONFIG.mine ]; then
-		sed -i "/^MY_CFLAGS/ s/$/ $compflags/" CONFIG.mine
-	else
-		echo "MY_CFLAGS += $compflags" >> CONFIG.mine
-	fi
-fi
-
-# determine the number of jobs for compiling via available ram and cpu cores
-maxcoresram=$(($(grep "MemTotal" /proc/meminfo | awk '{print $2}')/(1024*2500)))
-maxcorescpu=$(($(nproc --all)-1))
-# take the minimum of the two options
-maxjobs=$(( maxcoresram < maxcorescpu ? maxcoresram : maxcorescpu ))
-
-# get required packages
-make -j "$maxjobs" mpir linux-machine-setup &> makelog
-
-# compiling fails randomly, need to repeat a few times
-i=0
-maxtry=5
-success=false
-while [ $i -lt $maxtry ] && ! $success; do
-	success=true
-	echo "____try $i" >> makelog
-	make -j "$maxjobs" $protocols &>> makelog || success=false
-	((++i))
-	sleep 1
-done
+tar -xf "$REPO_DIR"/helpers/SSLcerts.tar
 
 # abort if no success
 $success

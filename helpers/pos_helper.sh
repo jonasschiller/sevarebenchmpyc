@@ -47,7 +47,7 @@ setupExperiment() {
 
 	echo "  setting up host(s) ${NODES[*]}"
 	ipaddr=2
-	path=/root/sevarebenchmotion/host_scripts/
+	path=/root/sevarebenchmpyc/host_scripts/
 	for node in "${NODES[@]}"; do
 		{ "$POS" comm laun --infile host_scripts/host_setup.sh --blocking "$node";
 		echo "      $node host setup successfull";
@@ -61,7 +61,7 @@ runExperiment() {
 	
 	echo "  running experiment on host(s) ${NODES[*]}"
 	player=0
-	path=/root/sevarebenchmotion/host_scripts
+	path=/root/sevarebenchmpyc/host_scripts
 	script="$path"/measurement.sh
 		
 	for node in "${NODES[@]}"; do
@@ -69,7 +69,7 @@ runExperiment() {
 		# the reset removes the compiled binaries, to make place for the next comp domain
 		{ 	"$POS" comm laun --blocking "$node" -- /bin/bash "$path"/experiment-reset.sh;
 			"$POS" comm laun --blocking --loop "$node" -- \
-				/bin/bash "$script" "$player" "$cdomain" "${cdProtocols[*]}" "${TTYPES[*]}" "$NETWORK" "${#NODES[*]}" "$ETYPE";
+				/bin/bash $"$script" "$player" "${TTYPES[*]}" "$NETWORK" "${#NODES[*]}" "$ETYPE";
 		} &
 		PIDS+=( $! )
 		((++player))
