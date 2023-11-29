@@ -87,8 +87,7 @@ for i in $(seq 2 $((partysize+1))); do
 done
 
 # run the SMC protocol
-$skip ||
-    /bin/time -f "$timerf" python3 "$experiment" $partystring -I $player &> "$log" || success=false
+$skip || python3 $experiment $partystring -I $player &> "$log" || success=false
 
 pos_upload "$log"
 
