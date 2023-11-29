@@ -1,8 +1,5 @@
 from mpyc.runtime import mpc
 
-# The following line is required to run computations in parallel.
-# It must be executed before any other MPC code.
-
 async def main():
     m = len(mpc.parties)
     l = m.bit_length()
