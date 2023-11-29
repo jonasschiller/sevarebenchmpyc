@@ -4,7 +4,7 @@
 # where we find the experiment results
 resultpath="$RPATH/${NODES[0]}/"
 
-# verify testresults
+# verify testresults by comparing to verification run results
 verifyExperiment() {
 
     # handle yao -O protocol variant, for some reason the result is only at node[1]
@@ -16,6 +16,8 @@ verifyExperiment() {
     for cdomain in "${CDOMAINS[@]}"; do
         declare -n cdProtocols="${cdomain}PROTOCOLS"
         for protocol in "${cdProtocols[@]}"; do
+            # Remove the last 8 characters from the 'protocol' variable.
+            # This operation is performed using the '::-8' substring syntax in shell scripting.
             protocol=${protocol::-8}
             
             i=0

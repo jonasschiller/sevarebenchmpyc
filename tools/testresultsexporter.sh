@@ -27,16 +27,6 @@ for dir in $1; do
     EXPERIMENT=$(grep "Experiment = " results/2022-09-12_20-27-08/E35-run-summary.dat | cut -c 18-)
     [ -z "$EXPERIMENT" ] && { echo "  EXPERIMENT not found - skipping"; continue; }
 
-    read -r -a FIELDPROTOCOLS <<< "$(grep 'Field  =' "$SUMMARYFILE" | cut -c 16-)"
-    read -r -a RINGPROTOCOLS <<< "$(grep 'Ring   =' "$SUMMARYFILE" | cut -c 16-)"
-    read -r -a BINARYPROTOCOLS <<< "$(grep 'Binary =' "$SUMMARYFILE" | cut -c 16-)"
-    
-    CDOMAINS=()
-    # activate computation domain for later handling
-    [ "${#FIELDPROTOCOLS[*]}" -gt 0 ] && CDOMAINS+=( FIELD )
-    [ "${#RINGPROTOCOLS[*]}" -gt 0 ] && CDOMAINS+=( RING )
-    [ "${#BINARYPROTOCOLS[*]}" -gt 0 ] && CDOMAINS+=( BINARY )
-    [ "${#CDOMAINS[*]}" -lt 1 ] && { echo "  CDomains not found - skipping"; continue; }
 
     [ -f "$EXPORTPATH/${SUMMARYFILE:28}" ] && { echo "  Files maybe already exported - skipping"; continue; }
 
