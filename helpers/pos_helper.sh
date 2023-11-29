@@ -68,7 +68,7 @@ runExperiment() {
 		echo "    execute experiment on host $node..."
 		# the reset removes the compiled binaries, to make place for the next comp domain
 		{ 		"$POS" comm laun --blocking --loop "$node" -- \
-				/bin/bash "$experiment" "$player" "${TTYPES[*]}" "$NETWORK" "${#NODES[*]}" "$ETYPE";
+				/bin/bash "$script" "$experiment" "$player" "${TTYPES[*]}" "$NETWORK" "${#NODES[*]}" "$ETYPE";
 		} &
 		PIDS+=( $! )
 		((++player))
