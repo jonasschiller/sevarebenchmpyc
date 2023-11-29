@@ -80,9 +80,15 @@ extraflag="-N $partysize"
 # need to skip for some nodes
 skip=false
 
+# Format Parameter String use -P addr:port option per party
+partystring =""
+for i in $(seq 2 $((partysize+1))); do
+    partystring+=" -P 10.10."$network"."$i":23000"
+done
+
 # run the SMC protocol
 $skip ||
-    /bin/time -f "$timerf" ./experiments/"$experiment" -h 10.10."$network".2 -p "$player" &> "$log" || success=false
+    /bin/time -f "$timerf" ./experiments/"$experiment" $partystring -I $player &> "$log" || success=false
 
 pos_upload "$log"
 
