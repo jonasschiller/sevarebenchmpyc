@@ -118,7 +118,3 @@ esac
 ####
 
 pos_sync
-
-echo "experiment successful"  >> measurementlog
-
-pos_upload measurementlog
