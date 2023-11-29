@@ -1,4 +1,5 @@
 import sys
+import subprocess
 
 # Check if the correct number of arguments is provided
 if len(sys.argv) != 3:
@@ -8,10 +9,12 @@ if len(sys.argv) != 3:
 # Get the parameters from the command line arguments
 param1 = sys.argv[1]
 
-# Use the parameters in your code
-if param1 == '0':
-    # Get input from other parties over the network
-    input_from_network = get_input_from_network()
-    # Use the input in your code
+# Run the bash script
+for i in range(0, int(sys.argv[2])):
+    script_path = "/root/sevarebenchmpyc/.sh"  # Replace with the actual path to your bash script
+subprocess.run(["bash", script_path])
+
+
+
     
 
