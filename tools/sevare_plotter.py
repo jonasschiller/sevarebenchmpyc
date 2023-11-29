@@ -61,7 +61,7 @@ def get_security_class(prot):
     if prot in protocols_semi_hon:
         return 3
     else:
-        print("ERROR: Protocol is was not recognized")
+        print("ERROR: Protocol was not recognized")
 
 
 def get_security_class_name(class_nb):
