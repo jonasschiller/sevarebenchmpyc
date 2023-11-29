@@ -6,50 +6,30 @@ resultpath="$RPATH/${NODES[0]}/"
 
 # verify testresults by comparing to verification run results
 verifyExperiment() {
-
-    # handle yao -O protocol variant, for some reason the result is only at node[1]
-    # move to resultpath location
-    while IFS= read -r file; do
-        mv "$file" "$resultpath"
-    done < <(find "$RPATH/${NODES[1]}/" -name "testresultsBINARYyaoO*" -print)
-
-    for cdomain in "${CDOMAINS[@]}"; do
-        declare -n cdProtocols="${cdomain}PROTOCOLS"
-        for protocol in "${cdProtocols[@]}"; do
-            # Remove the last 8 characters from the 'protocol' variable.
-            # This operation is performed using the '::-8' substring syntax in shell scripting.
-            protocol=${protocol::-8}
             
-            i=0
-            loopinfo=$(find "$resultpath" -name "*$i.loop*" -print -quit)
-            # while we find a next loop info file do
-            while [ -n "$loopinfo" ]; do
+# get pos filepath of the measurements for the current loop
+experimentresult=$(find "$resultpath" -name "testresults" -print -quit)
+verificationresult=$(find "$resultpath" -name "measurementlog" -print -quit)
 
-                # get pos filepath of the measurements for the current loop
-                experimentresult=$(find "$resultpath" -name "testresults$cdomain${protocol}_run*$i" -print -quit)
-                verificationresult=$(find "$resultpath" -name "measurementlog${cdomain}_run*$i" -print -quit)
+# check existance of files
+if [ ! -f "$experimentresult" ] || [ ! -f "$verificationresult" ]; then
+    styleOrange "  Skip File not found error: $experimentresult"
+    continue 2
+fi
 
-                # check existance of files
-                if [ ! -f "$experimentresult" ] || [ ! -f "$verificationresult" ]; then
-                    styleOrange "  Skip $protocol - File not found error: $experimentresult"
-                    continue 2
-                fi
+# verify experiment result - call experiment specific verify script
+chmod +x experiments/"$experiment"/verify.py
+match=$(experiments/"$experiment"/verify.py "$experimentresult" "$verificationresult")
+if [ "$match" != 1 ]; then
+    styleOrange "  Skip $match at $experimentresult";
+    continue 2;
+fi
+((++i))
 
-                # verify experiment result - call experiment specific verify script
-                chmod +x experiments/"$EXPERIMENT"/verify.py
-                match=$(experiments/"$EXPERIMENT"/verify.py "$experimentresult" "$verificationresult")
-                if [ "$match" != 1 ]; then
-                    styleOrange "  Skip $protocol - $match at $experimentresult";
-                    continue 2;
-                fi
-                ((++i))
-                loopinfo=$(find "$resultpath" -name "*$i.loop*" -print -quit)
-            done
 
-            # only pass if while-loop actually entered
-            [ "$i" -gt 0 ] && okfail ok "  verified - test passed for $protocol"
-        done
-    done
+# only pass if while-loop actually entered
+okfail ok "  verified - test passed"
+
 }
 
 ############
@@ -58,8 +38,8 @@ verifyExperiment() {
 exportExperimentResults() {
 
     # set up location
-    datatableShort="$EXPORTPATH/data/E${EXPERIMENT::2}_short_results.csv"
-    datatableFull="$EXPORTPATH/data/E${EXPERIMENT::2}_full_results.csv"
+    datatableShort="$EXPORTPATH/data/short_results.csv"
+    datatableFull="$EXPORTPATH/data/full_results.csv"
     mkdir -p "$datatableShort"
     rm -rf "$datatableShort"
 
@@ -256,38 +236,3 @@ infolineparser() {
     target="${MB:-NA};${Rounds:-NA};${Sec:-NA}"
 }
 
-# find out and set a protocols adversary model
-setAdvModel() {
-    protocol="$1"
-    if [[ " ${maldishonestProtocols[*]} " == *" $protocol "* ]]; then
-        advModel=maldishonest
-    elif [[ " ${covertdishonestProtocols[*]} " == *" $protocol "* ]]; then
-        advModel=covertdishonest
-    elif [[ " ${semidishonestProtocols[*]} " == *" $protocol "* ]]; then
-        advModel=semidishonest
-    elif [[ " ${malhonestProtocols[*]} " == *" $protocol "* ]]; then
-        advModel=malhonest
-    elif [[ " ${semihonestProtocols[*]} " == *" $protocol "* ]]; then
-        advModel=semihonest
-    fi
-}
-
-# find out the actual party size, the nodecount does not imply the size
-# since the program only uses as many nodes needed from all available
-setPartySize() {
-
-    protocol="$1"
-    nodecount="${#NODES[*]}"
-    partysize=""
-
-    if [[ " ${N4Protocols[*]} " == *" $protocol "* ]]; then
-        partysize="4"
-    elif [[ " ${N3Protocols[*]} " == *" $protocol "* ]]; then
-        partysize="3"
-    elif [[ " ${N2Protocols[*]} " == *" $protocol "* ]]; then
-        partysize="2"
-    fi
-
-    partysize=${partysize:-$nodecount}
-
-}

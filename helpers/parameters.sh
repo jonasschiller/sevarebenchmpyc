@@ -13,10 +13,6 @@ usage() {
     echo -e "\nAvailable NODES:"
 	# xargs replaces '\n' with ' '
 	pos no li | grep -E "$(whoami)|None" | awk '{print $1}' | xargs
-    echo -e "\nAvailable protocols:"
-    echo -e "  Fields (Mod prime / GF(2^n)):\n    ${supportedFieldProtocols[*]}"
-    echo -e "  Rings (Mod 2^k):\n    ${supportedRingProtocols[*]}"
-    echo -e "  Binary (SS & Garbling):\n    ${supportedBinaryProtocols[*]}"
     exit 1
 }
 
@@ -29,24 +25,11 @@ help() {
     echo -e "\nOptions (mandatory)"
     echo " -e, --experiment     experiment to run"
     echo " -n, --nodes          nodes to run the experiment on of the form <node1>[,<node2>,...]"
-    echo " -p, --protocols      SMC protocols to use of the form <protocol1>[,<protocol2>,...]"
     echo " -i, --input          input sizes, with <Values>"
     echo -e "\nOptions (optional)"
     echo "     --etype          experiment type, if applicable, specified with a code"
-    echo "     --compflags      extra flags to compile the protocols with"
-    echo "     --progflags      extra flags to compile the smc program with"
-    echo "     --runflags       extra flags to run the protocols with"
     echo "     --config         config files run with <path> as parameter, nodes can be given separatly"
     echo "                      allowed form: $0 --config file.conf [nodeA,...]"
-    echo "     --maldishonest   use every supported malicious dishonest protocol"
-    echo "     --codishonest    use every supported covert dishonest protocol"
-    echo "     --semidishonest  use every supported semi dishonest protocol"
-    echo "     --malhonest      use every supported malicious honest protocol"
-    echo "     --semihonest     use every supported semi honest protocol"
-    echo "     --field          use every supported field protocol"
-    echo "     --ring           use every supported ring protocol"
-    echo "     --binary         use every supported binary protocol"
-    echo "     --all            use every supported protocol"
     echo -e "\nManipulate Host Environment (optional)"
     echo " -c, --cpu            cpu thread counts, with <Values>"
     echo " -q, --cpuquota       cpu quotas in % (10 < quota), with <Values>"
@@ -90,8 +73,6 @@ RUNSTATUS="${Red}fail${Stop}"
 CONFIGRUN=false
 
 experiment=""
-compflags=""
-progflags=""
 runflags=""
 NODES=()
 INPUTS=()
