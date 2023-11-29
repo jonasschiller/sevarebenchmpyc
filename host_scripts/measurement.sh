@@ -80,7 +80,7 @@ extraflag="-N $partysize"
 skip=false
 
 # Format Parameter String use -P addr:port option per party
-partystring =""
+partystring=""
 for i in $(seq 2 $((partysize+1))); do
     partystring+=" -P 10.10."$network"."$i":23000"
 done
