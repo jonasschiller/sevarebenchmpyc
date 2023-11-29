@@ -8,13 +8,11 @@ set -e
 set -x
 
 REPO_DIR=$(pos_get_variable repo_dir --from-global)
-EXPERIMENT=$(pos_get_variable experiment --from-global)
 # SMC protocols to compile
-protocols="$1"
-ipaddr="$2"
-SWAP="$3"
-network="$4"
-read -r -a nodes <<< "$5"
+ipaddr="$1"
+SWAP="$2"
+network="$3"
+read -r -a nodes <<< "$4"
 groupsize=${#nodes[*]}
 
 
