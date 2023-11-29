@@ -61,10 +61,6 @@ help() {
     echo " -d, --packetdrop     packet drop/loss in network in %, with <Values>"
 	echo -e "\nAvailable experiments:\n"
 	ls experiments
-    echo -e "\nAvailable protocols:\n"
-    echo -e "  Fields (Mod prime / GF(2^n)):\n    ${supportedFieldProtocols[*]}"
-    echo -e "  Rings (Mod 2^k):\n    ${supportedRingProtocols[*]}"
-    echo -e "  Binary (SS & Garbling):\n    ${supportedBinaryProtocols[*]}"
 	echo -e "\nAvailable NODES:\n"
 	# xargs replaces '\n' with ' '
 	pos no li | grep -E "$(whoami)|None" | awk '{print $1}' | xargs
