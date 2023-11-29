@@ -7,4 +7,5 @@ player=$2
 
 
 echo "create tuple with base-size: $amount"
+touch Data/Input.txt
 "$REPO_DIR"/helpers/inputgen.py -t "$amount" 65000 "$player" > Data/Input.txt
