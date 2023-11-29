@@ -25,7 +25,7 @@ etype=$6
 # default to etype 1 if unset
 etype=${etype:-1}
 
-cd "$REPO_DIR"
+cd "$REPO_DIR"/experiments || exit
 
 
 ####
@@ -88,7 +88,7 @@ done
 
 # run the SMC protocol
 $skip ||
-    /bin/time -f "$timerf" ./experiments/"$experiment" $partystring -I $player &> "$log" || success=false
+    /bin/time -f "$timerf" python3 "$experiment" $partystring -I $player &> "$log" || success=false
 
 pos_upload "$log"
 
