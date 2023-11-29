@@ -120,8 +120,8 @@ setParameters() {
         for parsing arguments."; }
     # define the flags for the parameters
     # ':' means that the flag expects an argument.
-    SHORT=n:,h
-    LONG=nodes:,help
+    SHORT=n:,e:,h
+    LONG=nodes:,experiment:,help
 
     PARSED=$(getopt --options ${SHORT} \
                     --longoptions ${LONG} \
