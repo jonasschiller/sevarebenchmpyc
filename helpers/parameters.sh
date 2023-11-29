@@ -93,7 +93,7 @@ RUNSTATUS="${Red}fail${Stop}"
 # this is required for the config support logic
 CONFIGRUN=false
 
-EXPERIMENT=""
+experiment=""
 compflags=""
 progflags=""
 runflags=""
@@ -140,6 +140,9 @@ setParameters() {
                 help;;
             -n|--nodes) 
                 setArray NODES "$2"
+                shift;;
+            -e|--experiment)
+                experiment="$2"
                 shift;;
             *) error $LINENO "${FUNCNAME[0]}(): unrecognized flag $1 $2";;
         esac
