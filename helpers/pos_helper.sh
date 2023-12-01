@@ -31,7 +31,13 @@ initializePOS() {
 		{ "$POS" alloc set_var "$node" global-variables.yml --as-global;
 		# default variables file for concrete experiment
 		} || error ${LINENO} " ${FUNCNAME[0]} alloc set_var failed for $node"
+		# loop variables for experiment script (append random num to mitigate conflicts)
+		loopvarpath="experiments/$EXPERIMENT/loop-variables-$NETWORK.yml"
+		"$POS" alloc set_var "$node" "$loopvarpath" --as-loop;
+		} || error ${LINENO} " ${FUNCNAME[0]} alloc set_var failed for $node"
 	done
+
+	
 
 	echo "  resetting host(s) ${NODES[*]}"
 	for node in "${NODES[@]}"; do
@@ -69,7 +75,6 @@ runExperiment() {
 		
 	for node in "${NODES[@]}"; do
 		echo "    execute experiment on host $node..."
-		# the reset removes the compiled binaries, to make place for the next comp domain
 		{ 		"$POS" comm laun --blocking --loop "$node" -- \
 				/bin/bash "$script" "$experiment" "$player" "${TTYPES[*]}" "$NETWORK" "${#NODES[*]}" "$ETYPE";
 		} &

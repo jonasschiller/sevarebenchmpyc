@@ -27,6 +27,9 @@ etype=${etype:-1}
 cd "$REPO_DIR"/experiments || exit
 
 
+## Implement verification run so it can be benchmarked on the same parameters
+## This will also enable the verify results function
+
 ####
 #  environment manipulation section start
 ####
@@ -86,9 +89,9 @@ for i in $(seq 2 $((partysize+1))); do
 done
 
 
-bash "$REPO_DIR"/experiments/multiplication/generateInput.sh "$size" "$partysize" "$etype"
+bash "$REPO_DIR"/experiments/multiplication/generateInput.sh "$size" "$partysize" "$player" "$REPO_DIR"/Data/Input.txt
 # run the SMC protocol
-$skip || /usr/bin/python3 /root/sevarebenchmpyc/experiments/multiplication/$experiment $partystring -I $player &> "$log" || success=false
+$skip || /usr/bin/python3 /root/sevarebenchmpyc/experiments/"$EXPERIMENT"/"$EXPERIMENT".py $partystring -I $player &> "$log" || success=false
 
 pos_upload "$log"
 

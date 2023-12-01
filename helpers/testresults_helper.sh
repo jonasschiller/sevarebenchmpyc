@@ -18,8 +18,8 @@ if [ ! -f "$experimentresult" ] || [ ! -f "$verificationresult" ]; then
 fi
 
 # verify experiment result - call experiment specific verify script
-chmod +x experiments/"$experiment"/verify.py
-match=$(experiments/"$experiment"/verify.py "$experimentresult" "$verificationresult")
+chmod +x experiments/"$EXPERIMENT"/verify.py
+match=$(experiments/"$EXPERIMENT"/verify.py "$experimentresult" "$verificationresult")
 if [ "$match" != 1 ]; then
     styleOrange "  Skip $match at $experimentresult";
     continue 2;
@@ -45,7 +45,7 @@ exportExperimentResults() {
 
     dyncolumns=""
     # get the dynamic column names from the first .loop info file
-    loopinfo=$(find "$resultpath" -name "*loop*" -print -quit)
+    loopinfo=$(find "$resultpath" -name "loop*" -print -quit)
     
     # check if loop file exists
     if [ -z "$loopinfo" ]; then
@@ -53,7 +53,7 @@ exportExperimentResults() {
         return
     fi
 
-    for columnname in $(jq -r 'keys_unsorted[]' "$loopinfo"); do
+    for columnname in $(jq -r 'keys_unsorted[]' "$resultinfo"); do
         dyncolumns+="$columnname"
         case "$columnname" in
             freqs) dyncolumns+="(GHz)";;
@@ -65,110 +65,56 @@ exportExperimentResults() {
     done
 
     # generate header line of data dump with column information
-    basicInfo1="program;c.domain;adv.model;protocol;partysize;comp.time(s);comp.peakRAM(MiB);bin.filesize(MiB);"
-    basicInfo2="${dyncolumns}runtime_internal(s);runtime_external(s);peakRAM(MiB);jobCPU(%);P0commRounds;P0dataSent(MB);ALLdataSent(MB)"
-    compileInfo="comp.P0intin;comp.P1intin;comp.P2intin;comp.P0bitin;comp.P1bitin;compP2bitin;comp.intbits;comp.inttriples;comp.bittriples;comp.vmrounds;"
+    basicInfo1="program;partysize;"
+    basicInfo2="${dyncolumns}runtime_internal(s);ALLdataSent(MB)"
+    
     echo -e "${basicInfo1}${basicInfo2}" > "$datatableShort"
-    echo -e "${basicInfo1}${compileInfo}${basicInfo2};Tx(MB);Tx(rounds);Tx(s);Rx(MB);Rx(rounds);Rx(s);Brcasting(MB);Brcasting(rounds);Brcasting(s);TxRx(MB);TxRx(rounds);TxRx(s);Passing(MB);Passing(rounds);Passing(s);Part.Brcasting(MB);Part.Brcasting(rounds);Part.Brcasting(s);Ex(MB);Ex(rounds);Ex(s);Ex1to1(MB);Ex1to1(rounds);Ex1to1(s);Rx1to1(MB);Rx1to1(rounds);Rx1to1(s);Tx1to1(MB);Tx1to1(rounds);Tx1to1(s);Txtoall(MB);Txtoall(rounds);Txtoall(s)" > "$datatableFull"
+    echo -e "${basicInfo1}${basicInfo2}" > "$datatableFull"
 
-    # grab all the measurement information and append it to the datatable
-    for cdomain in "${CDOMAINS[@]}"; do
-        declare -n cdProtocols="${cdomain}PROTOCOLS"
-        for protocol in "${cdProtocols[@]}"; do
-        protocol=${protocol::-8}
-
-            advModel=""
-            setAdvModel "$protocol"
-            i=0
-            # get loopfile path for the current variables
-            loopinfo=$(find "$resultpath" -name "*$i.loop*" -print -quit)
-            echo "  exporting $protocol"
-            # while we find a next loop info file do
-            while [ -n "$loopinfo" ]; do
-                loopvalues=""
-                # extract loop var values
-                for value in $(jq -r 'values[]' "$loopinfo"); do
-                    loopvalues+="$value;"
-                done
-
-                # the actual number of participants
-                partysize=""
-                setPartySize "$protocol"
-                
-                # get pos filepath of the measurements for the current loop
-                compileinfo=$(find "$resultpath" -name "measurementlog${cdomain}_run*$i" -print -quit)
-                runtimeinfo=$(find "$resultpath" -name "testresults$cdomain${protocol}_run*$i" -print -quit)
-                if [ ! -f "$runtimeinfo" ] || [ ! -f "$compileinfo" ]; then
-                    styleOrange "    Skip - File not found error: runtimeinfo or compileinfo"
-                    continue 2
-                fi
-
-                ## Minimum result measurement information
-                ######
-                # extract measurement
-                compiletime=$(grep "Elapsed wall clock" "$compileinfo" | tail -n 1 | cut -d ' ' -f 1)
-                compilemaxRAMused=$(grep "Maximum resident" "$compileinfo" | tail -n 1 | cut -d ' ' -f 1)
-                binfsize=$(grep "Binary file size" "$compileinfo" | tail -n 1 | cut -d ' ' -f 1)
-                [ -n "$compilemaxRAMused" ] && compilemaxRAMused="$((compilemaxRAMused/1024))"
-                runtimeint=$(grep "Time =" "$runtimeinfo" | awk '{print $3}')
-                runtimeext=$(grep "Elapsed wall clock" "$runtimeinfo" | cut -d ' ' -f 1)
-                maxRAMused=$(grep "Maximum resident" "$runtimeinfo" | cut -d ' ' -f 1)
-                [ -n "$maxRAMused" ] && maxRAMused="$((maxRAMused/1024))"
-                jobCPU=$(grep "CPU this job" "$runtimeinfo" | cut -d '%' -f 1)
-                maxRAMused=${maxRAMused:-NA}
-                compilemaxRAMused=${compilemaxRAMused:-NA}
-
-                commRounds=$(grep "Data sent =" "$runtimeinfo" | awk '{print $7}')
-                dataSent=$(grep "Data sent =" "$runtimeinfo" | awk '{print $4}')
-                globaldataSent=$(grep "Global data sent =" "$runtimeinfo" | awk '{print $5}')
-                basicComm="${commRounds:-NA};${dataSent:-NA};${globaldataSent:-NA}"
-
-                # put all collected info into one row (Short)
-                basicInfo="${EXPERIMENT::2};$cdomain;$advModel;$protocol;$partysize;${compiletime:-NA};$compilemaxRAMused;${binfsize:-NA}"
-                echo -e "$basicInfo;$loopvalues$runtimeint;$runtimeext;$maxRAMused;$jobCPU;$basicComm" >> "$datatableShort"
-
-                ## Full result measurement information
-                ######
-                # extract compile information (this is repeated many times, potential to optimize)
-                p0intin=$(grep " integer inputs from player 0" "$compileinfo" | awk '{print $1}')
-                p1intin=$(grep " integer inputs from player 1" "$compileinfo" | awk '{print $1}')
-                p2intin=$(grep " integer inputs from player 2" "$compileinfo" | awk '{print $1}')
-                p0bitin=$(grep " bit inputs from player 0" "$compileinfo" | awk '{print $1}')
-                p1bitin=$(grep " bit inputs from player 1" "$compileinfo" | awk '{print $1}')
-                p2bitin=$(grep " bit inputs from player 2" "$compileinfo" | awk '{print $1}')
-                inputs="${p0intin:-NA};${p1intin:-NA};${p2intin:-NA};${p0bitin:-NA};${p1bitin:-NA};${p2bitin:-NA}"
-
-                intbits=$(grep " integer bits" "$compileinfo" | awk '{print $1}')
-                inttriples=$(grep " integer triples" "$compileinfo" | awk '{print $1}')
-                bittriples=$(grep " bit triples" "$compileinfo" | awk '{print $1}')
-                vmrounds=$(grep " virtual machine rounds" "$compileinfo" | awk '{print $1}')
-
-                compilevalues="$inputs;${intbits:-NA};${inttriples:-NA};${bittriples:-NA};${vmrounds:-NA}"
-
-                declare {Tx,Rx,broadcast,TxRx,passing,partBroadcast,Ex,Ex1to1,Rx1to1,Tx1to1,Txtoall}=""
-                # infolineparser $1=regex $2=var-reference $3=column1 $4=column2 $5=column3
-                infolineparser "Sending directly " "Tx" 3 6 9
-                infolineparser "Receiving directly " "Rx" 3 6 9
-                infolineparser "Broadcasting " "broadcast" 2 5 8
-                infolineparser "Sending/receiving " "TxRx" 2 5 8
-                infolineparser "Passing around " "passing" 3 6 9
-                infolineparser "Partial broadcasting " "partBroadcast" 3 6 9
-                infolineparser "Exchanging " "Ex" 2 5 8
-                infolineparser "Exchanging one-to-one " "Ex1to1" 3 6 9
-                infolineparser "Receiving one-to-one " "Rx1to1" 3 6 9
-                infolineparser "Sending one-to-one " "Tx1to1" 3 6 9
-                infolineparser "Sending to all " "Txtoall" 4 7 10
-
-                measurementvalues="$runtimeint;$runtimeext;$maxRAMused;$jobCPU;$basicComm;$Tx;$Rx;$broadcast;$TxRx;$passing;$partBroadcast;$Ex;$Ex1to1;$Rx1to1;$Tx1to1;$Txtoall"
-
-                # put all collected info into one row (Full)
-                echo -e "$basicInfo;$compilevalues;$loopvalues$measurementvalues" >> "$datatableFull"
-
-                # locate next loop file
-                ((++i))
-                loopinfo=$(find "$resultpath" -name "*$i.loop*" -print -quit)
-            done
+    i=0
+    # get loopfile path for the current variables
+    loopinfo=$(find "$resultpath" -name "*$i.loop*" -print -quit)
+    echo "  exporting"
+    # while we find a next loop info file do
+    while [ -n "$loopinfo" ]; do
+        loopvalues=""
+        # extract loop var values
+        for value in $(jq -r 'values[]' "$loopinfo"); do
+            loopvalues+="$value;"
         done
+
+        # the actual number of participants
+        partysize="${#NODES[*]}"
+        
+        # get pos filepath of the measurements for the current loop
+        # currently no compile info is stored for mpyc as it is not relevant for benchmark
+        # time is only extracted from text of testresults file
+        #compileinfo=$(find "$resultpath" -name "measurementlog_run*$i" -print -quit)
+        runtimeinfo=$(find "$resultpath" -name "testresults_run*$i" -print -quit)
+        if [ ! -f "$runtimeinfo" ]; then
+            styleOrange "    Skip - File not found error: runtimeinfo or compileinfo"
+            continue 2
+        fi
+
+        ## Minimum result measurement information
+        ######
+        # extract measurement
+        runtimeint=$(grep "elapsed time:" "$runtimeinfo" | awk '{print $6}')
+        globaldataSent=$(grep "Global data sent =" "$runtimeinfo" | awk '{print $5}')
+
+        # put all collected info into one row (Short)
+        basicInfo="${EXPERIMENT};$partysize;"
+        echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent >> "$datatableShort"
+
+
+        measurementvalues="$runtimeint;$globaldataSent"
+
+        # put all collected info into one row (Full)
+        echo -e "$basicInfo;$compilevalues;$loopvalues$measurementvalues" >> "$datatableFull"
+
+        # locate next loop file
+        ((++i))
+        loopinfo=$(find "$resultpath" -name "*$i.loop*" -print -quit)
     done
     # check if there was something exported
     rowcount=$(wc -l "$datatableShort" | awk '{print $1}')

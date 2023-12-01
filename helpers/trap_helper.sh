@@ -31,7 +31,7 @@ cleanup() {
 
     echo "verifying experiment results..."
 
-    verifyExperiment | tee -a "$SUMMARYFILE"
+    #verifyExperiment | tee -a "$SUMMARYFILE"
 
     echo "exporting measurement results..."
     # create and push Result Plots  

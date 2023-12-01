@@ -1,18 +1,33 @@
 import sys
 import subprocess
+import numpy as np
+import re
 
-# Check if the correct number of arguments is provided
 if len(sys.argv) != 3:
-    print("Usage: python verify.py <user> <parties>")
+    print("Usage: python verify.py <player> <parties>")
     sys.exit(1)
-
 # Get the parameters from the command line arguments
-param1 = sys.argv[1]
+n_parties = int(sys.argv[2])
+
+array = np.empty((n_parties,), dtype=object)
 
 # Run the bash script
-for i in range(0, int(sys.argv[2])):
-    script_path = "/root/sevarebenchmpyc/.sh"  # Replace with the actual path to your bash script
-subprocess.run(["bash", script_path])
+for i in range(0, n_parties):
+    # Load the array
+    file = '/root/servarebenchmpyc/Data/Input-P' + str(i) + '.txt'
+    with open(file, 'r') as f:
+        string = f.read()
+        # Remove first three characters
+        string = string[3:]
+    array[i] = np.array([int(re.sub(r'[^0-9A-Fa-f]', '', x), 16) for x in string.split()])
+
+for i in range(0,n_parties):
+    result=result*array[i]
+
+print(result)
+
+    
+
 
 
 
