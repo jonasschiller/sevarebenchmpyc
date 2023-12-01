@@ -74,7 +74,7 @@ exportExperimentResults() {
     i=0
     # get loopfile path for the current variables
     loopinfo=$(find "$resultpath" -name "*$i.loop*" -print -quit)
-    echo "  exporting"
+    echo " exporting"
     # while we find a next loop info file do
     while [ -n "$loopinfo" ]; do
         loopvalues=""
@@ -104,7 +104,7 @@ exportExperimentResults() {
 
         # put all collected info into one row (Short)
         basicInfo="${EXPERIMENT};$partysize;"
-        echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent >> "$datatableShort"
+        echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent" >> "$datatableShort"
 
 
         measurementvalues="$runtimeint;$globaldataSent"
@@ -129,6 +129,7 @@ exportExperimentResults() {
     column -s ';' -t "$datatableShort" > "${datatableShort::-3}"tsv
     column -s ';' -t "$datatableFull" > "${datatableFull::-3}"tsv
     okfail ok "exported short and full results (${datatableShort::-3}tsv)"
+
 
     # Add speedtest infos to summaryfile
     {
