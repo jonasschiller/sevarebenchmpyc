@@ -26,60 +26,61 @@ initializePOS() {
 	done
 
 	echo "  loading variables files on host(s) ${NODES[*]}"
+
 	for node in "${NODES[@]}"; do
 		# default variables file for all experiments
 		{ "$POS" alloc set_var "$node" global-variables.yml --as-global;
-		# default variables file for concrete experiment
-		} || error ${LINENO} " ${FUNCNAME[0]} alloc set_var failed for $node"
+		# default variables file for concrete experiment"
 		# loop variables for experiment script (append random num to mitigate conflicts)
-		{loopvarpath="experiments/$EXPERIMENT/loop-variables-$NETWORK.yml"
+		loopvarpath="experiments/$EXPERIMENT/loop-variables-$NETWORK.yml"
 		"$POS" alloc set_var "$node" "$loopvarpath" --as-loop;
 		} || error ${LINENO} " ${FUNCNAME[0]} alloc set_var failed for $node"
+
 	done
 
 	
+		echo "  resetting host(s) ${NODES[*]}"
+		for node in "${NODES[@]}"; do
+			# run reset blocking in background and wait for processes to end before continuing
+			{ { "$POS" nodes reset "$node"; } ||
+				error ${LINENO} "${FUNCNAME[0]} NODES reset on $node failed"
+				echo "    $node booted successfully"; } &
+			PIDS+=( $! )
+		done
+	}
 
-	echo "  resetting host(s) ${NODES[*]}"
-	for node in "${NODES[@]}"; do
-		# run reset blocking in background and wait for processes to end before continuing
-		{ { "$POS" nodes reset "$node"; } ||
-			error ${LINENO} "${FUNCNAME[0]} NODES reset on $node failed"
-			echo "    $node booted successfully"; } &
-		PIDS+=( $! )
-	done
-}
+	setupExperiment() {
 
-setupExperiment() {
+		echo "  setting up host(s) ${NODES[*]}"
+		ipaddr=2
+		path=/root/sevarebenchmpyc/host_scripts/
+		for node in "${NODES[@]}"; do
+			{ "$POS" comm laun --infile host_scripts/host_setup.sh --blocking "$node";
+			echo "      $node host setup successfull";
+			echo "    running experiment setup of $node";
+			"$POS" comm laun --blocking "$node" -- /bin/bash "$path"experiment-setup.sh "$ipaddr" "$SWAP" "$NETWORK" "${NODES[*]}";
+			echo "      $node experiment setup successfull"; 
+			} &
+			PIDS+=( $! )
+			((++ipaddr))
+		done
+	}
 
-	echo "  setting up host(s) ${NODES[*]}"
-	ipaddr=2
-	path=/root/sevarebenchmpyc/host_scripts/
-	for node in "${NODES[@]}"; do
-		{ "$POS" comm laun --infile host_scripts/host_setup.sh --blocking "$node";
-		echo "      $node host setup successfull";
-		echo "    running experiment setup of $node";
-		"$POS" comm laun --blocking "$node" -- /bin/bash "$path"experiment-setup.sh "$ipaddr" "$SWAP" "$NETWORK" "${NODES[*]}";
-		echo "      $node experiment setup successfull"; 
-		} &
-		PIDS+=( $! )
-		((++ipaddr))
-	done
-}
-
-runExperiment() {
-	
-	echo "  running experiment on host(s) ${NODES[*]}"
-	player=0
-	path=/root/sevarebenchmpyc/host_scripts
-	script="$path"/measurement.sh
+	runExperiment() {
 		
-	for node in "${NODES[@]}"; do
-		echo "    execute experiment on host $node..."
-		{ 		"$POS" comm laun --blocking --loop "$node" -- \
-				/bin/bash "$script" "$experiment" "$player" "${TTYPES[*]}" "$NETWORK" "${#NODES[*]}" "$ETYPE";
-		} &
-		PIDS+=( $! )
-		((++player))
-	done
+		echo "  running experiment on host(s) ${NODES[*]}"
+		player=0
+		path=/root/sevarebenchmpyc/host_scripts
+		script="$path"/measurement.sh
+			
+		for node in "${NODES[@]}"; do
+			echo "    execute experiment on host $node..."
+			{ 		"$POS" comm laun --blocking --loop "$node" -- \
+					/bin/bash "$script" "$experiment" "$player" "${TTYPES[*]}" "$NETWORK" "${#NODES[*]}" "$ETYPE";
+			} &
+			PIDS+=( $! )
+			((++player))
+		done
+	}
 }
 
