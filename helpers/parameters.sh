@@ -174,7 +174,7 @@ setParameters() {
     #[ "$nodetasks" -gt 10 ] && error $LINENO "${FUNCNAME[0]}(): it appears host ${NODES[0]} is currently in use"
 
      # generate loop-variables.yml (append random num to mitigate conflicts)
-    loopvarpath="experiments/$EXPERIMENT/loop-variables-$NETWORK.yml"
+    loopvarpath="experiments/loop-variables-$NETWORK.yml"
     rm -f "$loopvarpath"
     for type in "${TTYPES[@]}"; do
         declare -n ttypes="${type}"
