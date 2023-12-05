@@ -42,15 +42,18 @@ try:
         n = int(sys.argv[2])
         rrange = int(sys.argv[3])
         seed(int(sys.argv[4]))
+        filename = str(sys.argv[5])
         try:
-                mode = sys.argv[5][-1]
+                mode = sys.argv[6][-1]
         
         except:
                 mode = "d"
 
+        
+
 
 except:
-        print("Usage: ./inputgen.py <option> <amount> <range> <seed>")
+        print("Usage: ./inputgen.py <option> <amount> <range> <seed> <filename>")
         print("Options:")
         print("  -s: set,   Print <amount> many unique random numbers in range [1:<range>]")
         print("  -t: tupel, Print <amount> many random numbers in range [1:<range>]")
@@ -65,21 +68,19 @@ except:
 
 # python3.9 and lower support
 if (option == 't'):
-        print(set_to_string(get_random_tupel(n)))
-elif (option == 'f'):
-        print(set_to_string(get_random_float_tupel(n)))
-elif (option == 'm'):
-        print(matrix_to_string(get_random_matrix(n)))
-elif (option == 'k'):
-        print(matrix_to_string(get_random_float_matrix(n)))
-else:
-        print(set_to_string(get_random_set(n)))
+        
+        set_string = ""
+        if (option == 't'):
+                set_string = set_to_string(get_random_tupel(n))
+        elif (option == 'f'):
+                set_string = set_to_string(get_random_float_tupel(n))
+        elif (option == 'm'):
+                set_string = matrix_to_string(get_random_matrix(n))
+        elif (option == 'k'):
+                set_string = matrix_to_string(get_random_float_matrix(n))
+        else:
+                set_string = set_to_string(get_random_set(n))
 
-#for future python3.10 and higher releases
-#match option:
-#        case 't':
-#                print(set_to_string(get_random_tupel(n)))
-#        case 'f':
-#                print(set_to_string(get_random_float_tupel(n)))
-#        case _:
-#                print(set_to_string(get_random_set(n)))
+        with open(filename, 'w') as file:
+                file.write(set_string)
+
