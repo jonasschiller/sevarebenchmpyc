@@ -11,7 +11,7 @@ set -e
 set -x
 
 REPO_DIR=$(pos_get_variable repo_dir --from-global)
-timerf="\"%M (Maximum resident set size in kbytes)\n%e (Elapsed wall clock time in seconds)\n%P (Percent of CPU this job got)\""
+timerf="%M (Maximum resident set size in kbytes)\n%e (Elapsed wall clock time in seconds)\n%P (Percent of CPU this job got)"
 experiment=$1
 player=$2
 environ=""
@@ -91,7 +91,7 @@ done
 
 #bash "$REPO_DIR"/experiments/multiplication/generateInput.sh "$size" "$partysize" "$player" "$REPO_DIR"/Data/Input.txt
 # run the SMC protocol
-$skip || /usr/bin/time -f $timerf python /root/sevarebenchmpyc/experiments/"$experiment".py $partystring -I $player &> "$log" || success=false
+$skip || /usr/bin/time -f "$timerf" python /root/sevarebenchmpyc/experiments/"$experiment".py $partystring -I $player &> "$log" || success=false
 
 pos_upload "$log"
 
