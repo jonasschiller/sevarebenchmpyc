@@ -120,7 +120,7 @@ setParameters() {
                 setArray NODES "$2"
                 shift;;
             -e|--experiment)
-                EXPERIMENT="$2"cat
+                EXPERIMENT="$2"
                 shift;;
             -i|--input)
                 setArray INPUTS "$2"

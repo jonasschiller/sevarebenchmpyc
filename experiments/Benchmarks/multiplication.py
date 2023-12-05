@@ -5,22 +5,10 @@ import numpy as np
 async def main():
     # Load the array
      # Load the array
-    if mpc.pid==0:
-        with open('root/sevarebenchmpyc/experiments/Benchmarks/Input0.txt', 'r') as file:
-            string = file.read()
-            #Remove first three characters
-            string = string[3:]
-    elif mpc.pid==1:
-        with open('root/sevarebenchmpyc/experiments/Benchmarks/Input1.txt', 'r') as file:
-            string = file.read()
-            #Remove first three characters
-            string = string[3:]
-    else:
-        with open('root/sevarebenchmpyc/experiments/Benchmarks/Input2.txt', 'r') as file:
-            string = file.read()
-            #Remove first three characters
-            string = string[3:]
-    id=mpc.pid
+    with open('root/sevarebenchmpyc/experiments/Benchmarks/Input-P'+mpc.pid+'0.txt', 'r') as file:
+        string = file.read()
+        #Remove first three characters
+        string = string[3:]
     # Securely multiply the arrays using mpyc
     await mpc.start()
     input=np.array([int(re.sub(r'[^0-9A-Fa-f]', '', x),16) for x in string.split()])
