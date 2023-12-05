@@ -91,7 +91,7 @@ done
 
 #bash "$REPO_DIR"/experiments/multiplication/generateInput.sh "$size" "$partysize" "$player" "$REPO_DIR"/Data/Input.txt
 # run the SMC protocol
-$skip || /usr/bin/time -f $timerf python /root/sevarebenchmpyc/experiments/"$EXPERIMENT".py $partystring -I $player &> "$log" || success=false
+$skip || python /root/sevarebenchmpyc/experiments/"$EXPERIMENT".py $partystring -I $player &> "$log" || success=false
 
 pos_upload "$log"
 
