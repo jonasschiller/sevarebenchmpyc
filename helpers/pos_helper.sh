@@ -76,7 +76,7 @@ runExperiment() {
 	for node in "${NODES[@]}"; do
 		echo "    execute experiment on host $node..."
 		{ 		"$POS" comm laun --blocking --loop "$node" -- \
-				/bin/bash "$script" "$experiment" "$player" "${TTYPES[*]}" "$NETWORK" "${#NODES[*]}" "$ETYPE";
+				/bin/bash "$script" "$EXPERIMENT" "$player" "${TTYPES[*]}" "$NETWORK" "${#NODES[*]}" "$ETYPE";
 		} &
 		PIDS+=( $! )
 		((++player))
