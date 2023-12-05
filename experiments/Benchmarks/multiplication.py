@@ -4,7 +4,7 @@ import numpy as np
 
 async def main():
     
-    with open('experiments/Benchmarks/Input-P'+str(mpc.pid)+'.txt', 'r') as file:
+    with open('/root/sevarebenchmpyc/experiments/Benchmarks/Input-P'+str(mpc.pid)+'.txt', 'r') as file:
         string = file.read()
     # Securely multiply the arrays using mpyc
     await mpc.start()
