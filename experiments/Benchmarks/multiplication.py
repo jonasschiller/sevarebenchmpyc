@@ -5,7 +5,7 @@ import numpy as np
 async def main():
     # Load the array
      # Load the array
-    with open('root/sevarebenchmpyc/experiments/Benchmarks/Input-P'+str(mpc.pid)+'0.txt', 'r') as file:
+    with open('root/sevarebenchmpyc/experiments/Benchmarks/Input-P'+str(mpc.pid)+'.txt', 'r') as file:
         string = file.read()
         #Remove first three characters
         string = string[3:]
