@@ -160,6 +160,8 @@ setParameters() {
             --swap)
                 SWAP="$2"
                 shift;;
+            -x)
+                CONFIGRUN=true;;
             --config)
                 parseConfig "$2" "$4"
                 exit 0;;
