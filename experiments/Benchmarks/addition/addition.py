@@ -4,21 +4,10 @@ import numpy as np
 
 async def main():
     # Load the array
-    if mpc.pid==0:
-        with open('Benchmarks/Input0.txt', 'r') as file:
-            string = file.read()
-            #Remove first three characters
-            string = string[3:]
-    elif mpc.pid==1:
-        with open('Benchmarks/Input1.txt', 'r') as file:
-            string = file.read()
-            #Remove first three characters
-            string = string[3:]
-    else:
-        with open('Benchmarks/Input2.txt', 'r') as file:
-            string = file.read()
-            #Remove first three characters
-            string = string[3:]
+    with open('Benchmarks/Input-P'+ mpc.pid +'0.txt', 'r') as file:
+        string = file.read()
+        #Remove first three characters
+        string = string[3:]
     
     # Securely multiply the arrays using mpyc
     await mpc.start()
