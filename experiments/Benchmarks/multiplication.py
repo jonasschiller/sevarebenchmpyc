@@ -6,17 +6,17 @@ async def main():
     # Load the array
      # Load the array
     if mpc.pid==0:
-        with open('Benchmarks/Input0.txt', 'r') as file:
+        with open('root/sevarebenchmpyc/experiments/Benchmarks/Input0.txt', 'r') as file:
             string = file.read()
             #Remove first three characters
             string = string[3:]
     elif mpc.pid==1:
-        with open('Benchmarks/Input1.txt', 'r') as file:
+        with open('root/sevarebenchmpyc/experiments/Benchmarks/Input1.txt', 'r') as file:
             string = file.read()
             #Remove first three characters
             string = string[3:]
     else:
-        with open('Benchmarks/Input2.txt', 'r') as file:
+        with open('root/sevarebenchmpyc/experiments/Benchmarks/Input2.txt', 'r') as file:
             string = file.read()
             #Remove first three characters
             string = string[3:]
