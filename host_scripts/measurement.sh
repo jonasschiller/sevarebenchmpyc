@@ -93,7 +93,7 @@ done
 # run the SMC protocol
 $skip || /usr/bin/time -f "$timerf" python /root/sevarebenchmpyc/experiments/"$experiment".py $partystring -I $player &> "$log" || success=false
 
-pos_upload "$log"
+pos_upload --loop "$log"
 
 #abort if no success
 $success
@@ -122,4 +122,4 @@ esac
 #  environment manipulation reset section stop
 ####
 
-pos_sync
+pos_sync --loop
