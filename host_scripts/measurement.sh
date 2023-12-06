@@ -124,5 +124,3 @@ esac
 ####
 
 pos_sync --loop
-
-pos_upload --loop "loopfile"
