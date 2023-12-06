@@ -53,7 +53,7 @@ exportExperimentResults() {
         return
     fi
 
-    for columnname in $(jq -r 'keys_unsorted[]' "$resultinfo"); do
+    for columnname in $(jq -r 'keys_unsorted[]' "$loopinfo"); do
         dyncolumns+="$columnname"
         case "$columnname" in
             freqs) dyncolumns+="(GHz)";;
@@ -66,7 +66,7 @@ exportExperimentResults() {
 
     # generate header line of data dump with column information
     basicInfo1="program;partysize;"
-    basicInfo2="${dyncolumns}runtime_internal(s);ALLdataSent(MB)"
+    basicInfo2="${dyncolumns},runtime_internal(s);ALLdataSent(MB)"
     
     echo -e "${basicInfo1}${basicInfo2}" > "$datatableShort"
     echo -e "${basicInfo1}${basicInfo2}" > "$datatableFull"
