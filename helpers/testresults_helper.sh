@@ -45,7 +45,7 @@ exportExperimentResults() {
 
     dyncolumns=""
     # get the dynamic column names from the first .loop info file
-    loopinfo=$(find "$resultpath" -name "loop*" -print -quit)
+    loopinfo=$(find "$resultpath" -name "*loop" -print -quit)
     
     # check if loop file exists
     if [ -z "$loopinfo" ]; then
@@ -99,8 +99,8 @@ exportExperimentResults() {
         ## Minimum result measurement information
         ######
         # extract measurement
-        runtimeint=$(grep "elapsed time:" "$runtimeinfo" | awk '{print $6}')
-        globaldataSent=$(grep "Global data sent =" "$runtimeinfo" | awk '{print $5}')
+        runtimeint=$(grep "elapsed time:" "$runtimeinfo" | awk '{print $6}') | cut -d'|' -f 1
+        globaldataSent=$(grep "bytes sent: " "$runtimeinfo" | awk '{print $10}')
 
         # put all collected info into one row (Short)
         basicInfo="${EXPERIMENT};$partysize;"
