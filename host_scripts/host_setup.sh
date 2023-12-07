@@ -35,6 +35,7 @@ pip3 install -U gmpy2
 pip3 install -U mpyc
 checkConnection "github.com"
 git clone "$REPO" "$REPO_DIR"
+chmod -r 770 "$REPO_DIR"
 # load custom htop config
 mkdir -p .config/htop
 cp "$REPO_DIR"/helpers/htoprc ~/.config/htop/

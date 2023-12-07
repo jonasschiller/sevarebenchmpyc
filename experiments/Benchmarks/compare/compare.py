@@ -24,9 +24,9 @@ async def main():
     intarray[0]=3
     secnum = mpc.SecInt(32)
     a=secnum.array(intarray)
-    test=mpc.input(a,0)
+    test1=mpc.input(a,0)
     test2=mpc.input(a,1)
-    result = mpc.output(test==test2)
+    result = mpc.output(test1>test2)
     await mpc.shutdown()
     print(result)
 if __name__ == '__main__':
