@@ -99,12 +99,14 @@ exportExperimentResults() {
         ## Minimum result measurement information
         ######
         # extract measurement
-        runtimeint=$(grep "elapsed time:" "$runtimeinfo" | awk '{print $6}') | cut -d'|' -f 1
+        runtimeint=$(grep "elapsed time:" "$runtimeinfo" | awk '{print $6}' | cut -d'|' -f 1)
         globaldataSent=$(grep "bytes sent: " "$runtimeinfo" | awk '{print $10}')
+        runtimeext=$(grep "Elapsed wall clock time" "$runtimeinfo" | cut -d ' ' -f 1)
+        maxRAMused=$(grep "Maximum resident" "$runtimeinfo" | cut -d ' ' -f 1)
 
         # put all collected info into one row (Short)
         basicInfo="${EXPERIMENT};$partysize;"
-        echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent" >> "$datatableShort"
+        echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent;$runtimeext;$maxRAMused" >> "$datatableShort"
 
 
         measurementvalues="$runtimeint;$globaldataSent"

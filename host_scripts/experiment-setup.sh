@@ -177,7 +177,6 @@ pos_upload speedtest
 #### compile libaries and prepare experiments
 #######
 
-chmod +x "$REPO_DIR"/helpers/* "$REPO_DIR"/experiments/"$EXPERIMENT"/*
 cd "$REPO_DIR"
 
 tar -xf "$REPO_DIR"/helpers/SSLcerts.tar

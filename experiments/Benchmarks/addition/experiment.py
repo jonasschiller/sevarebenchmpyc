@@ -4,7 +4,7 @@ import numpy as np
 
 async def main():
     # Load the array
-    with open('Benchmarks/Input-P'+ mpc.pid +'0.txt', 'r') as file:
+    with open('Benchmarks/addition/Input-P'+ mpc.pid +'.txt', 'r') as file:
         string = file.read()
         #Remove first three characters
         string = string[3:]
