@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPO2_DIR=$(pos_get_variable repo2_dir --from-global)
+REPO_DIR=$(pos_get_variable repo_dir --from-global)
 set_size=$1
 num_parties=$2
 
