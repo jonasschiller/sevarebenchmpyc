@@ -1,16 +1,9 @@
 from mpyc.runtime import mpc
-import numpy
+import numpy as np
 import traceback
-secint=mpc.SecInt()
+import random
 
-#bitonic sort from https://github.com/lschoe/mpyc/blob/master/demos/SecureSortingNetsExplained.ipynb
-def bitonic_sort(up, x):
-    if len(x) <= 1:
-        return x
-    else: 
-        first = bitonic_sort(True, x[:len(x) // 2])
-        second = bitonic_sort(False, x[len(x) // 2:])
-        return bitonic_merge(up, first + second)
+secint=mpc.SecInt()
 
 def bitonic_merge(up, x): 
     # assume input x is bitonic, and sorted list is returned 
@@ -30,13 +23,32 @@ def bitonic_compare(up, x):
         d = b * (x[i + dist] - x[i])                   # d = 0 or d = x[i + dist] - x[i]
         x[i], x[i + dist] = x[i] + d, x[i + dist] - d  # secure swap
 
+async def find_intersect(x):
+    # identify all elements in x that are equal to the next element
+    # assume x is sorted
+    result = mpc.seclist([],secint)
+    for i in range(len(x) - 1):
+        result.append( x[i] * (x[i] == x[i + 1]) )
+    mpc.if_else(x[i]==x[i+1],x[i],None)    
 
 async def main():
     
     await mpc.start()
-    x = list(map(secint, [2, 4, 3, 5, 6, 1, 7, 8]))
+    input=[]
+    input2=[] 
+    while len(input) < 64 or len(input2) < 64:
+        if len(input) < 64:
+            input.append(random.randint(1,1000))
+            input= list(set(input))
+        if len(input2) < 64:
+            input2.append(random.randint(1,1000))
+            input2= list(set(input2))
+    input.sort()
+    input2.sort(reverse=True)
+    x = list(map(secint,input))  # Sort the input list in ascending order
+    y = list(map(secint, input2))
     try:
-        print(mpc.output(bitonic_sort(True, x)))
+        print(await mpc.output(await find_intersect(bitonic_merge(True, x+y))))
     except:
         traceback.print_exc()
     await mpc.shutdown()
