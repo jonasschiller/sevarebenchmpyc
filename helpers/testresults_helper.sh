@@ -66,7 +66,7 @@ exportExperimentResults() {
 
     # generate header line of data dump with column information
     basicInfo1="program;partysize;"
-    basicInfo2="${dyncolumns},runtime_internal(s);ALLdataSent(MB)"
+    basicInfo2="${dyncolumns}runtime_internal(s);ALLdataSent(MB);runtimeExternal;RAMused;"
     
     echo -e "${basicInfo1}${basicInfo2}" > "$datatableShort"
     echo -e "${basicInfo1}${basicInfo2}" > "$datatableFull"
@@ -99,7 +99,7 @@ exportExperimentResults() {
         ## Minimum result measurement information
         ######
         # extract measurement
-        runtimeint=$(grep "elapsed time:" "$runtimeinfo" | awk '{print $6}' | cut -d'|' -f 1)
+        runtimeint=$(grep "elapsed time:" "$runtimeinfo" | awk '{print $8}' | cut -d'|' -f 1)
         globaldataSent=$(grep "bytes sent: " "$runtimeinfo" | awk '{print $10}')
         runtimeext=$(grep "Elapsed wall clock time" "$runtimeinfo" | cut -d ' ' -f 1)
         maxRAMused=$(grep "Maximum resident" "$runtimeinfo" | cut -d ' ' -f 1)
