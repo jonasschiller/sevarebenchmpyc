@@ -89,8 +89,6 @@ for i in $(seq 2 $((partysize+1))); do
     partystring+=" -P 10.10."$network"."$i":23000"
 done
 
-
-"$REPO_DIR"/experiments/"$EXPERIMENT"/generateinput.sh "$size" "$partysize" "$REPO_DIR"/experiments/"$EXPERIMENT"/Input-P
 # run the SMC protocol
 $skip || /usr/bin/time -f "$timerf" python /root/sevarebenchmpyc/experiments/"$EXPERIMENT"/experiment.py $partystring -I $player &> "$log" || success=false
 
