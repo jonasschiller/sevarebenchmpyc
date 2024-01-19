@@ -8,7 +8,7 @@ async def main():
     input=np.zeros(1000000,np.int32)
     await mpc.start()
     intermed=mpc.np_multiply(secarray(input),secarray(input))
-    result = mpc.output(intermed[-1])
+    result = await mpc.output(intermed[-1])
     await mpc.shutdown()
 if __name__ == '__main__':
     mpc.run(main())
