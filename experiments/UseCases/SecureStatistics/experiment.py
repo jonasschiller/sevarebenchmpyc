@@ -12,21 +12,23 @@ import numpy as np
 import mpyc
 
 async def main():
+    
     secint = mpc.SecInt(32)
     secarray = secint.array
     m = len(mpc.parties)
-    data=np.zeros(10000,np.int32)
+    data = np.random.rand(1000) * 1000
+    data = np.round(data).astype(np.int32)
+    data = secarray(data)
     await mpc.start()
-    data=secarray(data)
-    data=mpc.input(data,0)
+    data = mpc.input(data, 0)
     total_sum = mpc.sum(list(data))
-    min,max = mpc.min_max(data)
+    min_val, max_val = mpc.min_max(data)
     avg = mpyc.statistics.mean(list(data))
 
-    print('Sum:', await mpc.output(total_sum) )
-    print('Maximum:', await mpc.output(max))
-    print('Minimum:', await mpc.output(min))
-    print('Average', await mpc.output(avg))
+    print('Sum:', await mpc.output(total_sum))
+    print('Maximum:', await mpc.output(max_val))
+    print('Minimum:', await mpc.output(min_val))
+    print('Average:', await mpc.output(avg))
 
     await mpc.shutdown()
 

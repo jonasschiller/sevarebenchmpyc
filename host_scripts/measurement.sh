@@ -15,7 +15,6 @@ timerf="%M (Maximum resident set size in kbytes)\n%e (Elapsed wall clock time in
 EXPERIMENT=$1
 player=$2
 environ=""
-size=$(pos_get_variable input_size --from-loop)
 # test types to simulate changing environments like cpu frequency or network latency
 read -r -a types <<< "$3"
 network="$4"

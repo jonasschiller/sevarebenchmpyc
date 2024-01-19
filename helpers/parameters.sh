@@ -25,9 +25,7 @@ help() {
     echo -e "\nOptions (mandatory)"
     echo " -e, --experiment     experiment to run"
     echo " -n, --nodes          nodes to run the experiment on of the form <node1>[,<node2>,...]"
-    echo " -i, --input          input sizes, with <Values>"
     echo -e "\nOptions (optional)"
-    echo "     --etype          experiment type, if applicable, specified with a code"
     echo "     --config         config files run with <path> as parameter, nodes can be given separatly"
     echo "                      allowed form: $0 --config file.conf [nodeA,...]"
     echo -e "\nManipulate Host Environment (optional)"
@@ -74,7 +72,6 @@ CONFIGRUN=false
 
 EXPERIMENT=""
 NODES=()
-INPUTS=()
 CPUS=()
 QUOTAS=()
 FREQS=()
@@ -102,8 +99,8 @@ setParameters() {
         for parsing arguments."; }
     # define the flags for the parameters
     # ':' means that the flag expects an argument.
-    SHORT=n:,e:,i:,m:,c:,q:,f:,r:,l:,b:,d:,x,h
-    LONG=nodes:,experiment:,config:,input:,measureram:,cpu:,cpuquota:,freq:,latency:,bandwidth:,packetdrop:,help
+    SHORT=n:,e:,m:,c:,q:,f:,r:,l:,b:,d:,x,h
+    LONG=nodes:,experiment:,config:,measureram:,cpu:,cpuquota:,freq:,latency:,bandwidth:,packetdrop:,help
 
     PARSED=$(getopt --options ${SHORT} \
                     --longoptions ${LONG} \
@@ -121,9 +118,6 @@ setParameters() {
                 shift;;
             -e|--experiment)
                 EXPERIMENT="$2"
-                shift;;
-            -i|--input)
-                setArray INPUTS "$2"
                 shift;;
             -m|--measureram)
                 TTYPES+=( MEASURERAM );;
@@ -181,8 +175,6 @@ setParameters() {
         parameters="${ttypes[*]}"
         echo "${type,,}: [${parameters// /, }]" >> "$loopvarpath"
     done
-    parameters="${INPUTS[*]}"
-    echo "input_size: [${parameters// /, }]" >> "$loopvarpath"
 
     # delete line measureram from loop_var, if active
     sed -i '/measureram/d' "$loopvarpath"
@@ -197,7 +189,6 @@ setParameters() {
     echo "    Experiment = $EXPERIMENT $ETYPE"
     echo "    Nodes = ${NODES[*]}"
     echo "    Internal network = 10.10.$NETWORK.0/24"
-    echo "    Inputs = ${INPUTS[*]}"
     echo "    Testtypes:"
     for type in "${TTYPES[@]}"; do
         declare -n ttypes="${type}"

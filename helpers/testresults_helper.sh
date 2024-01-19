@@ -4,34 +4,6 @@
 # where we find the experiment results
 resultpath="$RPATH/${NODES[0]}/"
 
-# verify testresults by comparing to verification run results
-verifyExperiment() {
-            
-# get pos filepath of the measurements for the current loop
-experimentresult=$(find "$resultpath" -name "testresults" -print -quit)
-verificationresult=$(find "$resultpath" -name "measurementlog" -print -quit)
-
-# check existance of files
-if [ ! -f "$experimentresult" ] || [ ! -f "$verificationresult" ]; then
-    styleOrange "  Skip File not found error: $experimentresult"
-    continue 2
-fi
-
-# verify experiment result - call experiment specific verify script
-chmod +x experiments/"$EXPERIMENT"/verify.py
-match=$(experiments/"$EXPERIMENT"/verify.py "$experimentresult" "$verificationresult")
-if [ "$match" != 1 ]; then
-    styleOrange "  Skip $match at $experimentresult";
-    continue 2;
-fi
-((++i))
-
-
-# only pass if while-loop actually entered
-okfail ok "  verified - test passed"
-
-}
-
 ############
 # Export experiment data from the pos_upload-ed logs into two tables
 ############
