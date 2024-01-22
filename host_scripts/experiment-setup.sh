@@ -8,13 +8,12 @@ set -e
 set -x
 
 REPO_DIR=$(pos_get_variable repo_dir --from-global)
-EXPERIMENT=$(pos_get_variable experiment --from-global)
+
 # SMC protocols to compile
-protocols="$1"
-ipaddr="$2"
-SWAP="$3"
-network="$4"
-read -r -a nodes <<< "$5"
+ipaddr="$1"
+SWAP="$2"
+network="$3"
+read -r -a nodes <<< "$4"
 groupsize=${#nodes[*]}
 
 
@@ -203,9 +202,7 @@ if [ -n "$SWAP" ] && [ -b /dev/nvme0n1 ]; then
 	availram=$(free -m | grep "Mem:" | awk '{print $7}')
 	fallocate -l $((availram-ram))M /whale/filler
 fi
-#######
-#### compile libaries and prepare experiments
-#######
+
 
 cd "$REPO_DIR"
 
