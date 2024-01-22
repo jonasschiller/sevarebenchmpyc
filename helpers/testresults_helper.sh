@@ -38,10 +38,9 @@ exportExperimentResults() {
 
     # generate header line of data dump with column information
     basicInfo1="program;partysize;"
-    basicInfo2="${dyncolumns}runtime_internal(s);ALLdataSent(MB);runtimeExternal;RAMused;"
+    basicInfo2="${dyncolumns};runtime_internal(s);ALLdataSent(MB);runtimeExternal(s);RAMused(MB);"
     
     echo -e "${basicInfo1}${basicInfo2}" > "$datatableShort"
-    echo -e "${basicInfo1}${basicInfo2}" > "$datatableFull"
 
     i=0
     # get loopfile path for the current variables
@@ -77,14 +76,8 @@ exportExperimentResults() {
         maxRAMused=$(grep "Maximum resident" "$runtimeinfo" | cut -d ' ' -f 1)
 
         # put all collected info into one row (Short)
-        basicInfo="${EXPERIMENT};$partysize;"
+        basicInfo="${EXPERIMENT};$partysize"
         echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent;$runtimeext;$maxRAMused" >> "$datatableShort"
-
-
-        measurementvalues="$runtimeint;$globaldataSent"
-
-        # put all collected info into one row (Full)
-        echo -e "$basicInfo;$compilevalues;$loopvalues$measurementvalues" >> "$datatableFull"
 
         # locate next loop file
         ((++i))
@@ -101,7 +94,6 @@ exportExperimentResults() {
     # create a tab separated table for pretty formating
     # convert .csv -> .tsv
     column -s ';' -t "$datatableShort" > "${datatableShort::-3}"tsv
-    column -s ';' -t "$datatableFull" > "${datatableFull::-3}"tsv
     okfail ok "exported short and full results (${datatableShort::-3}tsv)"
 
 
