@@ -38,7 +38,7 @@ exportExperimentResults() {
 
     # generate header line of data dump with column information
     basicInfo1="program;partysize;"
-    basicInfo2="${dyncolumns};runtime_internal(s);ALLdataSent(MB);runtimeExternal(s);RAMused(MB);"
+    basicInfo2="${dyncolumns}runtime_internal(s);Bytes Send;runtimeExternal(s);RAMused(MB);"
     
     echo -e "${basicInfo1}${basicInfo2}" > "$datatableShort"
 
