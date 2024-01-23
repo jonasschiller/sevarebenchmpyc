@@ -38,7 +38,7 @@ exportExperimentResults() {
 
     # generate header line of data dump with column information
     basicInfo1="program;partysize;"
-    basicInfo2="${dyncolumns}runtime_internal(s);Bytes Send;runtimeExternal(s);RAMused(MB);"
+    basicInfo2="${dyncolumns}runtime_internal(s);Bytes Send;runtimeExternal(s);RAMused(MB);System Time (s)"
     
     echo -e "${basicInfo1}${basicInfo2}" > "$datatableShort"
 
@@ -77,7 +77,7 @@ exportExperimentResults() {
         systemTime=$(grep "System time" "$runtimeinfo" | cut -d ' ' -f 1)
         # put all collected info into one row (Short)
         basicInfo="${EXPERIMENT};$partysize"
-        echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent;$runtimeext;$maxRAMused" >> "$datatableShort"
+        echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent;$runtimeext;$maxRAMused,$systemTime" >> "$datatableShort"
 
         # locate next loop file
         ((++i))
