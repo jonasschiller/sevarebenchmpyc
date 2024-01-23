@@ -11,7 +11,7 @@ set -e
 set -x
 
 REPO_DIR=$(pos_get_variable repo_dir --from-global)
-timerf="%M (Maximum resident set size in kbytes)\n%e (Elapsed wall clock time in seconds)\n%P (Percent of CPU this job got)\n%t (System time in seconds)"
+timerf="%M (Maximum resident set size in kbytes)\n%e (Elapsed wall clock time in seconds)\n%P (Percent of CPU this job got)\n%e (System time in seconds)"
 EXPERIMENT=$1
 player=$2
 environ=""
