@@ -1,8 +1,10 @@
+
+# Bitwise operation for 1.000.000 leads to a system fautlt due to too much RAM usage
 import numpy as np
 from mpyc.runtime import mpc
 async def main():
-    size=1000000
-    intarray=np.ones(size,np.int64)
+    size=10000
+    intarray=np.ones(size,dtype=int)
     secnum = mpc.SecInt(1)
     await mpc.start()
     test=secnum.array(intarray)

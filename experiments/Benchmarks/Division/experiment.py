@@ -1,5 +1,6 @@
 import numpy as np
 from mpyc.runtime import mpc
+import mpyc.gmpy as gmpy2
 async def main():
     # Securely multiply the arrays using mpyc
     await mpc.start()
