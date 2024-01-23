@@ -88,7 +88,7 @@ elif [ "$nic1" != 0 ] && [ "$groupsize" == 3 ]; then
 	highspeed=$(hostname | grep -cE "idex|meld|tinyman|yieldly|algofi|gard|goracle|zone")
 	[ "$highspeed" -eq 1 ] && installDriver
 
-	sleep 10
+	sleep 20
 
 	# verify that nodes array is circularly sorted
 	# this is required for the definition of this topology
