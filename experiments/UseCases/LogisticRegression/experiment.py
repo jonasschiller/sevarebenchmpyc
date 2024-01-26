@@ -5,8 +5,8 @@ from sklearn.linear_model import LogisticRegression as LogisticRegressionSK
 
 
 # Notice that we use the entire dataset to train the model
-n_samples = 100
-n_features = 5
+n_samples = 10000
+n_features = 20
 # Fixed random state for reproducibility
 random_state = 3
 tolerance = 1e-4

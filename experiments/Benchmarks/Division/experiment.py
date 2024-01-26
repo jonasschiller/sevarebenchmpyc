@@ -4,9 +4,11 @@ import mpyc.gmpy as gmpy2
 async def main():
     # Securely multiply the arrays using mpyc
     await mpc.start()
-    secarray=mpc.SecInt(32).array
-    input=np.ones(1000000,np.int32)
-    intermed=mpc.np_divide(secarray(input),secarray(input))
+    secarray=mpc.SecFxp(32,8).array
+    size=10
+    input=secarray(np.ones(size,np.int32))
+    for i in range(size):
+        intermed=mpc.np_divide(input[i],input[i])
     result = await mpc.output(intermed[-1])
     print(result)
     await mpc.shutdown()
