@@ -77,7 +77,7 @@ exportExperimentResults() {
         systemTime=$(grep "System time" "$runtimeinfo" | cut -d ' ' -f 1)
         # put all collected info into one row (Short)
         basicInfo="${EXPERIMENT};$partysize"
-        echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent;$runtimeext;$maxRAMused,$systemTime" >> "$datatableShort"
+        echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent;$runtimeext;$maxRAMused;$systemTime" >> "$datatableShort"
 
         # locate next loop file
         ((++i))

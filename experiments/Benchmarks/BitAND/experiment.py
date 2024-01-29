@@ -4,7 +4,7 @@
 import numpy as np
 from mpyc.runtime import mpc
 async def main():
-    size=100000
+    size=10000
     intarray=np.ones(size,dtype=int)
     secnum = mpc.SecInt(1)
     await mpc.start()

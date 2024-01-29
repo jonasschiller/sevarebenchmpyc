@@ -5,7 +5,7 @@ async def main():
     # Securely multiply the arrays using mpyc
     await mpc.start()
     secarray=mpc.SecFxp(32,8).array
-    size=1000
+    size=10000
     input=secarray(np.ones(size,np.int32))
     for i in range(size):
         intermed=(input[i]/input[i])
