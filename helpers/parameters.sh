@@ -101,7 +101,7 @@ setParameters() {
     # define the flags for the parameters
     # ':' means that the flag expects an argument.
     SHORT=n:,e:,i:,m:,c:,q:,f:,r:,l:,b:,d:,x,h
-    LONG=nodes:,experiment:,inputs:,config:,measureram:,cpu:,cpuquota:,freq:,latency:,bandwidth:,packetdrop:,help
+    LONG=nodes:,experiment:,input:,config:,measureram:,cpu:,cpuquota:,freq:,latency:,bandwidth:,packetdrop:,help
 
     PARSED=$(getopt --options ${SHORT} \
                     --longoptions ${LONG} \
