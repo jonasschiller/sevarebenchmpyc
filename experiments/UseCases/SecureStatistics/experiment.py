@@ -10,17 +10,19 @@ the average, the maximum, the minimum and the total sum of the data
 from mpyc.runtime import mpc
 import numpy as np
 import mpyc
+import sys
 
 async def main():
+    if len(sys.argv) > 1:
+        input_size = sys.argv[1]
+    else:
+        print("No argument provided.")
     
     secint = mpc.SecInt(32)
     secarray = secint.array
-    m = len(mpc.parties)
-    data = np.random.rand(1000) * 1000
-    data = np.round(data).astype(np.int32)
+    data = np.ones(int(input_size), dtype=np.int32)
     data = secarray(data)
     await mpc.start()
-    data = mpc.input(data, 0)
     total_sum = mpc.sum(list(data))
     min_val, max_val = mpc.min_max(data)
     avg = mpyc.statistics.mean(list(data))
@@ -31,5 +33,6 @@ async def main():
     print('Average:', await mpc.output(avg))
 
     await mpc.shutdown()
+    
 
 mpc.run(main())

@@ -12,6 +12,7 @@ set -x
 
 REPO_DIR=$(pos_get_variable repo_dir --from-global)
 timerf="%M (Maximum resident set size in kbytes)\n%e (Elapsed wall clock time in seconds)\n%P (Percent of CPU this job got)\n%S (System time in seconds)"
+size=$(pos_get_variable input_size --from-loop)
 EXPERIMENT=$1
 player=$2
 environ=""
@@ -89,7 +90,7 @@ for i in $(seq 2 $((partysize+1))); do
 done
 
 # run the SMC protocol
-$skip || /usr/bin/time -f "$timerf" python /root/sevarebenchmpyc/experiments/"$EXPERIMENT"/experiment.py $partystring -I $player &> "$log" || success=false
+$skip || /usr/bin/time -f "$timerf" python /root/sevarebenchmpyc/experiments/"$EXPERIMENT"/experiment.py $partystring -I $player $size &> "$log" || success=false
 
 pos_upload --loop "$log"
 

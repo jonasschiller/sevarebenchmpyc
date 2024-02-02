@@ -72,6 +72,7 @@ CONFIGRUN=false
 
 EXPERIMENT=""
 NODES=()
+INPUTS=()
 CPUS=()
 QUOTAS=()
 FREQS=()
@@ -99,8 +100,8 @@ setParameters() {
         for parsing arguments."; }
     # define the flags for the parameters
     # ':' means that the flag expects an argument.
-    SHORT=n:,e:,m:,c:,q:,f:,r:,l:,b:,d:,x,h
-    LONG=nodes:,experiment:,config:,measureram:,cpu:,cpuquota:,freq:,latency:,bandwidth:,packetdrop:,help
+    SHORT=n:,e:,i:,m:,c:,q:,f:,r:,l:,b:,d:,x,h
+    LONG=nodes:,experiment:,inputs:,config:,measureram:,cpu:,cpuquota:,freq:,latency:,bandwidth:,packetdrop:,help
 
     PARSED=$(getopt --options ${SHORT} \
                     --longoptions ${LONG} \
@@ -115,6 +116,9 @@ setParameters() {
                 help;;
             -n|--nodes) 
                 setArray NODES "$2"
+                shift;;
+            -i|--input)
+                setArray INPUTS "$2"
                 shift;;
             -e|--experiment)
                 EXPERIMENT="$2"
@@ -175,6 +179,8 @@ setParameters() {
         parameters="${ttypes[*]}"
         echo "${type,,}: [${parameters// /, }]" >> "$loopvarpath"
     done
+    parameters="${INPUTS[*]}"
+    echo "input_size: [${parameters// /, }]" >> "$loopvarpath"
 
     # delete line measureram from loop_var, if active
     sed -i '/measureram/d' "$loopvarpath"
