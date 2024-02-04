@@ -18,7 +18,7 @@ async def main():
     else:
         print("No argument provided.")
     start = 1  # Start range
-    end = 10000  # End range
+    end = 100000  # End range
     input1 = np.sort(np.random.permutation(np.arange(start, end+1))[:input_size]).tolist()    
     input2 = np.sort(np.random.permutation(np.arange(start, end+1))[:input_size])[::-1].tolist()
     
