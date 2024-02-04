@@ -62,9 +62,7 @@ class Market(object):
         else:
             self.Bids.append([order.Price, order.Quantity])  
 
-async def get_arrays(Bids, Offers,size=10):
-    bids=np.array(Bids)
-    offers=np.array(Offers)
+async def get_arrays(Bids, Offers,size):
     bids_prices = mpc.SecInt(32).array(5*np.ones(size,np.int32))
     bids_quantities = mpc.SecInt(32).array(5*np.ones(size,np.int32))
     offers_prices = mpc.SecInt(32).array(5*np.ones(size,np.int32))
@@ -77,11 +75,10 @@ async def ComputeClearingPrice(Bids, Offers, PriceRange,size):
     smallest_z=secint(100000)
     this_z=secint(0)
     for i in range (1, PriceRange):
-        i_array=secint.array(np.array([i]*Bids.__len__(),np.int32))
         accumulatedSupply=0
         accumulatedDemand=0
-        bid_comp=mpc.np_less(bids_prices,i_array)
-        offer_comp=mpc.np_less(i_array,offers_prices)
+        bid_comp=mpc.np_less(bids_prices,i)
+        offer_comp=mpc.np_less(i,offers_prices)
         accumulatedSupply=mpc.sum(list(mpc.np_multiply(offers_quantities,offer_comp)))
         accumulatedDemand=mpc.sum(list(mpc.np_multiply(bids_quantities,bid_comp)))
         this_z=accumulatedSupply-accumulatedDemand

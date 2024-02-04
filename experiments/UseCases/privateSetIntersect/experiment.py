@@ -2,7 +2,9 @@ from mpyc.runtime import mpc
 import numpy as np
 import traceback
 import random
-
+import sys
+import time
+import numpy as np
 
 secnum = mpc.SecInt()
 
@@ -11,16 +13,17 @@ async def main():
     
     input=[]
     input2=[] 
-    while len(input) < 64 or len(input2) < 64:
-        if len(input) < 64:
-            input.append(random.randint(1,400))
-            input= list(set(input))
-        if len(input2) < 64:
-            input2.append(random.randint(1,400))
-            input2= list(set(input2))
-    x = list(map(secnum, input+input2))  # secret input
+    if len(sys.argv) > 1:
+        input_size = int(sys.argv[1])
+    else:
+        print("No argument provided.")
+    start = 1  # Start range
+    end = 10000  # End range
+    input1 = np.sort(np.random.permutation(np.arange(start, end+1))[:input_size]).tolist()    
+    input2 = np.sort(np.random.permutation(np.arange(start, end+1))[:input_size])[::-1].tolist()
+    
+    x = list(map(secnum, input1+input2))  # secret input
     async with mpc:
-        x=mpc.input(x,0)
         mpc.random.shuffle(secnum, x)  # secret in-place random shuffle
         x = mpc.sorted(x)  # sort on absolute value
         for i in range(0,len(x),2):

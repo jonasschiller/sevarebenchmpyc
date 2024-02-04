@@ -5,8 +5,8 @@ from sklearn.linear_model import LogisticRegression as LogisticRegressionSK
 
 
 # Notice that we use the entire dataset to train the model
-n_samples = 10000
-n_features = 20
+n_samples = 100
+n_features = 5
 # Fixed random state for reproducibility
 random_state = 3
 tolerance = 1e-4
@@ -115,11 +115,10 @@ async def logistic_regression_example():
     X_mpc, y_mpc = get_mpc_data(X, y)
 
     await mpc.start()
-    X_shared, y_shared = distribute_data_over_players(X_mpc, y_mpc)
     # Perform training step of logistic regression
-    weights= training(X_shared, y_shared, alpha)
-    y_pred = predict(X_shared, weights)
-    accuracy = compute_accuracy(y_pred, y_shared)
+    weights= training(X_mpc, y_mpc, alpha)
+    y_pred = predict(X_mpc, weights)
+    #accuracy = compute_accuracy(y_pred, y_mpc)
     
     print("Accuracy: ", await mpc.output(accuracy))
     await mpc.shutdown()

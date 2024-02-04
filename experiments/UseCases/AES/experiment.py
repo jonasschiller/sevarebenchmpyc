@@ -58,7 +58,35 @@ def key_expansion(k):
         w.append(mpc.vector_add(w[-Nk], t))
     K = [list(zip(*_)) for _ in zip(*[iter(w)]*4)]
     return K
-,
+
+def key_expansion_parallel(k,n):
+    """AES key expansion for 128/256-bit keys."""
+    w = list(map(list, zip(*k)))
+    Nk = len(w)  # Nk is 4 or 8
+    Nr = 10 if Nk == 4 else 14
+    for i in range(Nk, 4*(Nr+1)):
+        t = w[-1]
+        if i % Nk in {0, 4}:
+            t = [sbox(x) for x in t]
+        if i % Nk == 0:
+            a, b, c, d = t
+            t = [b + (f256(1) << i // Nk - 1), c, d, a]
+        w.append(mpc.vector_add(w[-Nk], t))
+    K = [list(zip(*_)) for _ in zip(*[iter(w)]*4)]
+    K = [K for _ in range(n)]
+    return K
+
+def encrypt(K, s):
+    """AES encryption of s given key schedule K."""
+    Nr = len(K) - 1  # Nr is 10 or 14
+    s = mpc.matrix_add(s, K[0])
+    for i in range(1, Nr+1):
+        s = [[sbox(x) for x in _] for _ in s]
+        s = [s[j][j:] + s[j][:j] for j in range(4)]
+        if i < Nr:
+            s = mpc.matrix_prod(C, s)
+        s = mpc.matrix_add(s, K[i])
+    return s
 
 def encrypt(K, s):
     """AES encryption of s given key schedule K."""
@@ -92,15 +120,20 @@ async def xprint(text, s):
     s = await mpc.output(sum(s, []))
     print(f'{text} {bytes(map(int, s)).hex()}')
 
-
+import numpy as np
 async def main():
-   
-
+    if len(sys.argv) > 1:
+        input_size = int(sys.argv[1])
+        #price_range = int(sys.argv[2])
+    else:
+        print("No argument provided.")
+    
     await mpc.start()
     p = [[secfld(17 * (4*j + i)) for j in range(4)] for i in range(4)]
     k128 = [[secfld(4*j + i) for j in range(4)] for i in range(4)]
     K = key_expansion(k128)
-    await xprint('Ciphertext: ', c[0])
+    for i in range(input_size):
+        encrypted = encrypt(K, p)
     await mpc.shutdown()
 
 if __name__ == '__main__':
