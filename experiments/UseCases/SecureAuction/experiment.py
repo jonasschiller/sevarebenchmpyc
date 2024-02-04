@@ -62,17 +62,17 @@ class Market(object):
         else:
             self.Bids.append([order.Price, order.Quantity])  
 
-async def get_arrays(Bids, Offers):
+async def get_arrays(Bids, Offers,size=10):
     bids=np.array(Bids)
     offers=np.array(Offers)
-    bids_prices = mpc.SecInt(32).array(5*np.ones(10,np.int32))
-    bids_quantities = mpc.SecInt(32).array(5*np.ones(10,np.int32))
-    offers_prices = mpc.SecInt(32).array(5*np.ones(10,np.int32))
-    offers_quantities = mpc.SecInt(32).array(5*np.ones(10,np.int32))
+    bids_prices = mpc.SecInt(32).array(5*np.ones(size,np.int32))
+    bids_quantities = mpc.SecInt(32).array(5*np.ones(size,np.int32))
+    offers_prices = mpc.SecInt(32).array(5*np.ones(size,np.int32))
+    offers_quantities = mpc.SecInt(32).array(5*np.ones(size,np.int32))
     return bids_prices, bids_quantities, offers_prices, offers_quantities
 
-async def ComputeClearingPrice(Bids, Offers, PriceRange): 
-    bids_prices, bids_quantities, offers_prices, offers_quantities= await get_arrays(Bids, Offers)
+async def ComputeClearingPrice(Bids, Offers, PriceRange,size): 
+    bids_prices, bids_quantities, offers_prices, offers_quantities= await get_arrays(Bids, Offers,size)
     l=secint(0)
     smallest_z=secint(100000)
     this_z=secint(0)
@@ -94,17 +94,18 @@ async def main():
     # Create market instance and test orders
     if len(sys.argv) > 1:
         input_size = int(sys.argv[1])
+        #price_range = int(sys.argv[2])
     else:
         print("No argument provided.")
     await mpc.start() 
-    market = Market(PriceRange=10) 
+    market = Market(PriceRange=100) 
     for i in range(0, input_size):    
         buyOrder = Order( Side=False, Quantity=mpc.SecInt(32)(5), Price=mpc.SecInt(32)(5))
         market.AddOrder(buyOrder)
         sellOrder = Order(Side=True, Quantity=mpc.SecInt(32)(5), Price=mpc.SecInt(32)(5))
         market.AddOrder(sellOrder) 
 
-    price=await ComputeClearingPrice(market.Bids, market.Offers, 10)
+    price=await ComputeClearingPrice(market.Bids, market.Offers, 100,input_size)
     print(await mpc.output(price)) 
     await mpc.shutdown()
     

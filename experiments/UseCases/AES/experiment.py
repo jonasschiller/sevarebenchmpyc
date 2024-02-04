@@ -58,7 +58,7 @@ def key_expansion(k):
         w.append(mpc.vector_add(w[-Nk], t))
     K = [list(zip(*_)) for _ in zip(*[iter(w)]*4)]
     return K
-
+,
 
 def encrypt(K, s):
     """AES encryption of s given key schedule K."""
@@ -100,8 +100,7 @@ async def main():
     p = [[secfld(17 * (4*j + i)) for j in range(4)] for i in range(4)]
     k128 = [[secfld(4*j + i) for j in range(4)] for i in range(4)]
     K = key_expansion(k128)
-    c = encrypt(K, p)
-    await xprint('Ciphertext: ', c)
+    await xprint('Ciphertext: ', c[0])
     await mpc.shutdown()
 
 if __name__ == '__main__':
