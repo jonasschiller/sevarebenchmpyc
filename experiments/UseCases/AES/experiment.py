@@ -7,6 +7,10 @@ and a threshold of 3 players. The players are numbered 0, 1, 2.
 
 import sys
 from mpyc.runtime import mpc
+import concurrent.futures
+
+import numpy as np
+import asyncio
 
 secfld = mpc.SecFld(2**8)  # Secure AES field GF(2^8) for secret values.
 f256 = secfld.field        # Plain AES field GF(2^8) for public values.
@@ -33,16 +37,6 @@ def sbox(x):
     v = mpc.from_bits(w)
     return v
 
-
-def sbox1(v):
-    """AES inverse S-Box."""
-    w = mpc.to_bits(v)
-    z = mpc.vector_add(w, B)
-    y = mpc.matrix_prod([z], A1, True)[0]
-    x = mpc.from_bits(y)**254
-    return x
-
-
 def key_expansion(k):
     """AES key expansion for 128/256-bit keys."""
     w = list(map(list, zip(*k)))
@@ -59,7 +53,7 @@ def key_expansion(k):
     K = [list(zip(*_)) for _ in zip(*[iter(w)]*4)]
     return K
 
-def key_expansion_parallel(k,n):
+def key_expansion_np(k):
     """AES key expansion for 128/256-bit keys."""
     w = list(map(list, zip(*k)))
     Nk = len(w)  # Nk is 4 or 8
@@ -73,7 +67,6 @@ def key_expansion_parallel(k,n):
             t = [b + (f256(1) << i // Nk - 1), c, d, a]
         w.append(mpc.vector_add(w[-Nk], t))
     K = [list(zip(*_)) for _ in zip(*[iter(w)]*4)]
-    K = [K for _ in range(n)]
     return K
 
 def encrypt(K, s):
@@ -88,53 +81,23 @@ def encrypt(K, s):
         s = mpc.matrix_add(s, K[i])
     return s
 
-def encrypt(K, s):
-    """AES encryption of s given key schedule K."""
-    Nr = len(K) - 1  # Nr is 10 or 14
-    s = mpc.matrix_add(s, K[0])
-    for i in range(1, Nr+1):
-        s = [[sbox(x) for x in _] for _ in s]
-        s = [s[j][j:] + s[j][:j] for j in range(4)]
-        if i < Nr:
-            s = mpc.matrix_prod(C, s)
-        s = mpc.matrix_add(s, K[i])
-    return s
-
-
-def decrypt(K, s):
-    """AES decryption of s given key schedule K."""
-    Nr = len(K) - 1  # Nr is 10 or 14
-    for i in range(Nr, 0, -1):
-        s = mpc.matrix_add(s, K[i])
-        if i < Nr:
-            s = mpc.matrix_prod(C1, s)
-        s = [s[j][-j:] + s[j][:-j] for j in range(4)]
-        s = [[sbox1(x) for x in _] for _ in s]
-    s = mpc.matrix_add(s, K[0])
-    return s
-
-
 async def xprint(text, s):
     """Print matrix s transposed and flattened as hex string."""
     s = list(map(list, zip(*s)))
     s = await mpc.output(sum(s, []))
     print(f'{text} {bytes(map(int, s)).hex()}')
 
-import numpy as np
-async def main():
-    if len(sys.argv) > 1:
-        input_size = int(sys.argv[1])
-        #price_range = int(sys.argv[2])
-    else:
-        print("No argument provided.")
-    
+secnum=mpc.SecFld(2**8)
+async def aes():
     await mpc.start()
     p = [[secfld(17 * (4*j + i)) for j in range(4)] for i in range(4)]
     k128 = [[secfld(4*j + i) for j in range(4)] for i in range(4)]
     K = key_expansion(k128)
-    for i in range(input_size):
-        encrypted = encrypt(K, p)
+    encrypted = encrypt(K, p)
     await mpc.shutdown()
 
+
+    
+
 if __name__ == '__main__':
-    mpc.run(main())
+    mpc.run(aes())
