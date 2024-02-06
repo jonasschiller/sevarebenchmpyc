@@ -13,6 +13,7 @@ set -x
 REPO_DIR=$(pos_get_variable repo_dir --from-global)
 timerf="%M (Maximum resident set size in kbytes)\n%e (Elapsed wall clock time in seconds)\n%P (Percent of CPU this job got)\n%S (System time in seconds)"
 size=$(pos_get_variable input_size --from-loop)
+param2=$(pos_get_variable param2 --from-loop) || param2=""
 EXPERIMENT=$1
 player=$2
 environ=""
@@ -87,9 +88,14 @@ partystring=""
 for i in $(seq 2 $((partysize+1))); do
     partystring+=" -P 10.10."$network"."$i":23000"
 done
+if [ -n "$param2" ]; then
+    # run the SMC protocol
+    $skip || /usr/bin/time -f "$timerf" python /root/sevarebenchmpyc/experiments/"$EXPERIMENT"/experiment.py $partystring -I $player $size $param2 &> "$log" || success=false
+else
+    # run the SMC protocol
+    $skip || /usr/bin/time -f "$timerf" python /root/sevarebenchmpyc/experiments/"$EXPERIMENT"/experiment.py $partystring -I $player $size &> "$log" || success=false
+fi
 
-# run the SMC protocol
-$skip || /usr/bin/time -f "$timerf" python /root/sevarebenchmpyc/experiments/"$EXPERIMENT"/experiment.py $partystring -I $player $size &> "$log" || success=false
 
 pos_upload --loop "$log"
 

@@ -2,99 +2,81 @@ import numpy as np
 from mpyc.runtime import mpc
 from sklearn import datasets
 from sklearn.linear_model import LogisticRegression as LogisticRegressionSK
+import sys
 
 
-# Notice that we use the entire dataset to train the model
-n_samples = 100
-n_features = 5
 # Fixed random state for reproducibility
 random_state = 3
 tolerance = 1e-4
 
-
-secnum = mpc.SecFxp(l=64, f=32)
-
+secnum = mpc.SecFxp(l=32, f=8)
 
 def get_mpc_data(X, y):
     X_mpc = [[secnum(x, integral=False) for x in row] for row in X.tolist()]
     y_mpc = [secnum(y, integral=False) for y in y.tolist()]
     return X_mpc, y_mpc
 
-
-def distribute_data_over_players(X_mpc, y_mpc):
-    X_shared = [mpc.input(row, senders=0) for row in X_mpc]
-    y_shared = mpc.input(y_mpc, senders=0)
-    return X_shared, y_shared
-
-def training(X_shared, y_shared, alpha):
+def training(X_shared, y_shared, alpha,n_features,n_samples):
     # Initialize weights
-    weights = [secnum(0, integral=False) for _ in range(n_features)]
+    weights = secnum.array(np.zeros(n_features), integral=False)
     # Perform training step of logistic regression
     for _ in range(100):
-        weights = logistic_regression_step(X_shared, y_shared, weights, alpha)
+        weights = logistic_regression_step(X_shared, y_shared, weights, alpha,n_features,n_samples)
     return weights
 
-def logistic_regression_step(X_shared, y_shared, weights, alpha):
+def logistic_regression_step(X_shared, y_shared, weights, alpha,n_features,n_samples):
     # Compute gradient
-    gradient = compute_gradient(X_shared, y_shared, weights)
+    gradient = compute_gradient(X_shared, y_shared, weights,n_features,n_samples)
     # Update weights
-    weights = update_weights(weights, gradient[0], alpha)
+    weights = update_weights(weights, gradient, alpha,n_features,n_samples)
     return weights
 
-def compute_gradient(X_shared, y_shared, weights):
+def compute_gradient(X_shared, y_shared, weights,n_features,n_samples):
     # Compute gradient
-    gradient = [secnum(0, integral=False) for _ in range(n_features)]
-    dot_product= mpc.matrix_prod(X_shared, [[_] for _ in weights], False)
-    dot_product = [x for [x] in dot_product]
+    gradient = secnum.array(np.zeros(n_features), integral=False)
+    dot_product= X_shared @ weights.T
     # Compute approximated sigmoid using relu plus
-    d_0 = [x < secnum(-0.5)  for x in dot_product]
-    d_1 = [x > secnum(0.5) for x in dot_product]
+    d_0 = dot_product < 0.5  
+    d_1 = dot_product > 0.5 
 
-    sigmoid = [
-        d_1[i]
-        + (secnum(1) - d_0[i]) * (secnum(1) - d_1[i]) * (dot_product[i] + secnum(0.5))
-        for i in range(len(d_0))
-    ]
-    gradient = mpc.matrix_prod(mpc.matrix_sub([sigmoid],[y_shared]), X_shared, False)
+    sigmoid = d_1 + (1 - d_0) * (1 - d_1) * (dot_product + 0.5)
+    gradient = (sigmoid - y_shared) @ X_shared
     return gradient
 
-def update_weights(weights, gradient, alpha):
+def update_weights(weights, gradient, alpha,n_features,n_samples):
     # Update weights
-    for j in range(n_features):
-        weights[j] = weights[j] - alpha * gradient[j]
+    weights = weights - alpha * gradient
     return weights
 
-def predict(X_shared, weights):
+def predict(X_shared, weights,n_samples):
     # Predict
-    y_pred = [secnum(0, integral=False) for _ in range(n_samples)]
-    dot_product= mpc.matrix_prod(X_shared, [[_] for _ in weights], False)
-    dot_product = [x for [x] in dot_product]
+    y_pred = secnum.array(np.zeros(n_samples), integral=False)
+    dot_product= X_shared @ weights.T
     # Compute approximated sigmoid using relu plus
-    d_0 = [x < secnum(-0.5)  for x in dot_product]
-    d_1 = [x > secnum(0.5) for x in dot_product]
+    d_0 = dot_product < 0.5  
+    d_1 = dot_product > 0.5 
 
-    sigmoid = [
-        d_1[i]
-        + (secnum(1) - d_0[i]) * (secnum(1) - d_1[i]) * (dot_product[i] + secnum(0.5))
-        for i in range(len(d_0))
-    ]
-    print(len(sigmoid))
-    for i in range(n_samples):
-        y_pred[i] = mpc.if_else(sigmoid[i] > secnum(0.5, integral=False), secnum(1, integral=False), secnum(0, integral=False))
+    sigmoid = d_1 + (1 - d_0) * (1 - d_1) * (dot_product + 0.5)
+    y_pred = sigmoid > 0.5
     return y_pred
 
-def compute_accuracy(y_pred, y_shared):
+def compute_accuracy(y_pred, y_shared,n_samples):
     # Compute accuracy
-    accuracy = 0
-    for i in range(n_samples):
-        accuracy += mpc.if_else(y_pred[i] == y_shared[i], secnum(1, integral=False), secnum(0, integral=False))
-    accuracy = accuracy / n_samples
+    y_pred =np.array(y_pred)
+    y_shared = np.array(y_shared)
+    accuracy = np.sum(y_pred == y_shared) / n_samples
     return accuracy
 
 async def logistic_regression_example():
     print(
         "Classification (Logistic regression) with l1 penalty, with gradient descent method"
     )
+    
+    if len(sys.argv) > 2:
+        n_samples = int(sys.argv[1])
+        n_features = int(sys.argv[2])
+    else:
+        print("Usage: python experiment.py <n_samples> <n_features>")
     alpha = 0.1
 
     # Create classification dataset
@@ -112,15 +94,17 @@ async def logistic_regression_example():
     
     X = np.array(X)
     y = np.array(y)
-    X_mpc, y_mpc = get_mpc_data(X, y)
-
+    #X_mpc, y_mpc = get_mpc_data(X, y)
+    X_mpc = secnum.array(X)
+    y_mpc = secnum.array(y)
     await mpc.start()
     # Perform training step of logistic regression
-    weights= training(X_mpc, y_mpc, alpha)
-    y_pred = predict(X_mpc, weights)
-    #accuracy = compute_accuracy(y_pred, y_mpc)
+    weights= training(X_mpc, y_mpc, alpha, n_features,n_samples)
+    y_pred = predict(X_mpc, weights,n_samples)
+    y_pred = await mpc.output(y_pred)
+    accuracy = compute_accuracy(y_pred, y,n_samples)
     
-    print("Accuracy: ", await mpc.output(accuracy))
+    print("Accuracy: ", accuracy)
     await mpc.shutdown()
 
    
