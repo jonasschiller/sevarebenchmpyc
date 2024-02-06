@@ -7,6 +7,11 @@ the average, the maximum, the minimum and the total sum of the data
 """
 
 
+# This use case calculates secure statistics, namely min,max, mean and the sum in secure computation
+# It uses the framework MPyC to do so
+# The only parameter is the size of the input data
+# Input is generated randomly and not secret shared but provided at compile time
+
 from mpyc.runtime import mpc
 import numpy as np
 import mpyc
