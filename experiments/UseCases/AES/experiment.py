@@ -89,11 +89,17 @@ async def xprint(text, s):
 
 secnum=mpc.SecFld(2**8)
 async def aes():
+    if len(sys.argv) > 1:
+        batch_size = int(sys.argv[1])
+    else:
+        print("No command line argument provided.")
+    
     await mpc.start()
     p = [[secfld(17 * (4*j + i)) for j in range(4)] for i in range(4)]
     k128 = [[secfld(4*j + i) for j in range(4)] for i in range(4)]
     K = key_expansion(k128)
-    encrypted = encrypt(K, p)
+    for i in range(batch_size):
+        c = encrypt(K, p)
     await mpc.shutdown()
 
 

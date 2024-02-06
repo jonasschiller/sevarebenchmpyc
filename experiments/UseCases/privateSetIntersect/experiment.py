@@ -1,3 +1,7 @@
+#Set Intersection using Bitonic Merge Sort
+#Pre implemented using numpy functionality
+#Probably quicker than naive implementation
+
 from mpyc.runtime import mpc
 import numpy as np
 import traceback
@@ -11,8 +15,6 @@ secnum = mpc.SecInt()
 
 async def main():
     
-    input=[]
-    input2=[] 
     if len(sys.argv) > 1:
         input_size = int(sys.argv[1])
     else:
