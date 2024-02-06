@@ -109,98 +109,82 @@ async def main():
     # batch size is always number in front of decimal point
     k = 1 if len(sys.argv) == 1 else float(sys.argv[1])
     if k - int(k) == 0.5:
-        secnum = mpc.SecFxp(32, 4)
+        secnum = mpc.SecFxp(10, 4)
     else:
         secnum = mpc.SecInt(37)
     batch_size = round(k - 0.01)
 
     await mpc.start()
 
-    if len(sys.argv) <= 2:
-        offset = random.randrange(10001 - batch_size) if mpc.pid == 0 else None
-        offset = await mpc.transfer(offset, senders=0)
-    else:
-        offset = int(sys.argv[2])
+    offset = 16
 
     f = 6
 
     logging.info('--------------- INPUT   -------------')
     print(f'Type = {secnum.__name__}, range = ({offset}, {offset + batch_size})')
-    # read batch_size labels and images at given offset
-    # on local pc takes roughly 0.16 seconds could be optimized but not to important?
-    starttime=time.time()
-    df = gzip.open(os.path.join('data', 't10k-labels-idx1-ubyte.gz'))
-    d = df.read()[8 + offset: 8 + offset + batch_size]
-    labels = list(map(int, d))
+    labels=np.frombuffer(np.load('labels.npy'),dtype=np.ubyte)[0:batch_size].tolist()
     print('Labels:', labels)
-    df = gzip.open(os.path.join('data', 't10k-images-idx3-ubyte.gz'))
-    d = df.read()[16 + offset * 28**2: 16 + (offset + batch_size) * 28**2]
-    endtime=time.time()
-    print(f'Elapsed time for reading labels and images: {endtime-starttime}')
-    x = np.frombuffer(d, dtype=np.ubyte)/ 255
+    x = np.frombuffer(np.load('data.npy'), dtype=np.ubyte)[0:batch_size*28**2]/ 255
     x = np.reshape(x, (batch_size, 1, 28, 28))
-    if batch_size == 1:
-        print(np.array2string(np.vectorize(lambda a: int(bool(a)))(x[0, 0]), separator=''))
+    
     if issubclass(secnum, mpc.SecureInteger):
         x = secnum.array(scale_int(x, 1 << f))
     else:
         x = secnum.array(x, integral=False)
     #Logging info not necessarily required but helps
     #Load uses the weights of each layer and the biases
-    logging.info('--------------- LAYER 1 -------------')
+    #logging.info('--------------- LAYER 1 -------------')
     W, b = load('conv1', f)
-    logging.info('- - - - - - - - conv2d  - - - - - - -')
+    #logging.info('- - - - - - - - conv2d  - - - - - - -')
     x = convolvetensor(x, W, b)
-    logging.info('- - - - - - - - ReLU    - - - - - - -')
+    #logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
     if issubclass(secnum, mpc.SecureInteger):
         secnum.bit_length = 16
-    logging.info('- - - - - - - - avgpool - - - - - - -')
+    #logging.info('- - - - - - - - avgpool - - - - - - -')
     x = avgpool(x)
-    await mpc.barrier('after-layer-1')
+    #await mpc.barrier('after-layer-1')
 
-    logging.info('--------------- LAYER 2 -------------')
+    #logging.info('--------------- LAYER 2 -------------')
     W, b = load('conv2', f, 3)
-    print(x.shape)
-    logging.info('- - - - - - - - conv2d  - - - - - - -')
+    #logging.info('- - - - - - - - conv2d  - - - - - - -')
     x = convolvetensor(x, W, b)
-    logging.info('- - - - - - - - ReLU    - - - - - - -')
+    #logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    print(x.shape)
     if issubclass(secnum, mpc.SecureInteger):
         secnum.bit_length = 23
-    logging.info('- - - - - - - - avgpool - - - - - - -')
+    #logging.info('- - - - - - - - avgpool - - - - - - -')
     x = avgpool(x)
     
-    await mpc.barrier('after-layer-2')
-    print(x.shape)
+    #await mpc.barrier('after-layer-2')
+
     # Reshaping for Fully connected layer
     x = x.reshape(batch_size, 7*7*16)
 
-    logging.info('--------------- LAYER 3 -------------')
+    #logging.info('--------------- LAYER 3 -------------')
     W, b = load('fc1', f, 4)
-    logging.info('- - - - - - - - fc 256 x 120  - - -')
+    #logging.info('- - - - - - - - fc 256 x 120  - - -')
     x = x @ W + b
     if issubclass(secnum, mpc.SecureInteger):
         secnum.bit_length = 30
-    logging.info('- - - - - - - - ReLU    - - - - - - -')
+    #logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-3')
+    #await mpc.barrier('after-layer-3')
 
-    logging.info('--------------- LAYER 4 -------------')
+    #logging.info('--------------- LAYER 4 -------------')
     W, b = load('fc2', f, 5)
-    logging.info('- - - - - - - - fc 120 x 84  - - - -')
+    #logging.info('- - - - - - - - fc 120 x 84  - - - -')
     x = x @ W + b
-    logging.info('- - - - - - - - ReLU    - - - - - - -')
+    #logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-4')
+    #await mpc.barrier('after-layer-4')
      
-    logging.info('--------------- LAYER 5 -------------')
+    #logging.info('--------------- LAYER 5 -------------')
     W, b = load('fc3', f, 6)
-    logging.info('- - - - - - - - fc 84 x 10  - - - -')
+    #logging.info('- - - - - - - - fc 84 x 10  - - - -')
     x = x @ W + b
 
-    logging.info('--------------- OUTPUT  -------------')
+    #logging.info('--------------- OUTPUT  -------------')
     if issubclass(secnum, mpc.SecureInteger):
         secnum.bit_length = 37
 

@@ -111,11 +111,7 @@ async def main():
 
     await mpc.start()
 
-    if len(sys.argv) <= 2:
-        offset = random.randrange(10001 - batch_size) if mpc.pid == 0 else None
-        offset = await mpc.transfer(offset, senders=0)
-    else:
-        offset = int(sys.argv[2])
+    offset=16
 
     f = 6
 
@@ -153,7 +149,7 @@ async def main():
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    logging.info('- - - - - - - - avgpool - - - - - - -')
+    logging.info('- - - - - - - - maxpool - - - - - - -')
     x = maxpool(x)
     await mpc.barrier('after-layer-1')
 
@@ -168,7 +164,7 @@ async def main():
     W, b = load('block_2_2', f, 3)
     x = convolvetensor(x, W, b)
     x = (x >= 0) * x
-    logging.info('- - - - - - - - avgpool - - - - - - -')
+    logging.info('- - - - - - - - maxpool - - - - - - -')
     x = maxpool(x)
     
     await mpc.barrier('after-layer-2')

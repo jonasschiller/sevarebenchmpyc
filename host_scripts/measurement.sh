@@ -25,8 +25,7 @@ etype=$6
 # default to etype 1 if unset
 etype=${etype:-1}
 
-cd "$REPO_DIR"/experiments || exit
-
+cd "$REPO_DIR"/experiments/"$EXPERIMENT" || exit
 
 ## Implement verification run so it can be benchmarked on the same parameters
 ## This will also enable the verify results function
