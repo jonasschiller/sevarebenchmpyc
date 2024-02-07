@@ -109,7 +109,7 @@ async def main():
     # batch size is always number in front of decimal point
     k = 1 if len(sys.argv) == 1 else float(sys.argv[1])
     secnum = mpc.SecFxp(10, 4)
-    batch_size = k
+    batch_size = int(k)
 
     await mpc.start()
 
