@@ -114,7 +114,6 @@ async def main():
     f = 6
 
     logging.info('--------------- INPUT   -------------')
-    print(f'Type = {secnum.__name__}, range = ({offset}, {offset + batch_size})')
     # read batch_size labels and images at given offset
     # on local pc takes roughly 0.16 seconds could be optimized but not to important?
     starttime=time.time()
@@ -141,7 +140,7 @@ async def main():
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-1')
+    #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
     W, b = load('block_1_2', f, 3)
     x = convolvetensor(x, W, b)
@@ -149,7 +148,7 @@ async def main():
     x = (x >= 0) * x
     logging.info('- - - - - - - - maxpool - - - - - - -')
     x = maxpool(x)
-    await mpc.barrier('after-layer-1')
+    #await mpc.barrier('after-layer-1')
 
     logging.info('--------------- Block 2 -------------')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
@@ -157,7 +156,7 @@ async def main():
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-2')
+    #await mpc.barrier('after-layer-2')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
     W, b = load('block_2_2', f, 3)
     x = convolvetensor(x, W, b)
@@ -165,7 +164,7 @@ async def main():
     logging.info('- - - - - - - - maxpool - - - - - - -')
     x = maxpool(x)
     
-    await mpc.barrier('after-layer-2')
+    #await mpc.barrier('after-layer-2')
     
     logging.info('--------------- Block 3 -------------')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
@@ -173,7 +172,7 @@ async def main():
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-1')
+    #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
     W, b = load('block_3_2', f, 3)
     x = convolvetensor(x, W, b)
@@ -187,7 +186,7 @@ async def main():
     logging.info('- - - - - - - - maxpool - - - - - - -')
     x = maxpool(x)
     
-    await mpc.barrier('after-layer-3')
+    #await mpc.barrier('after-layer-3')
     
     logging.info('--------------- Block 4 -------------')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
@@ -195,12 +194,12 @@ async def main():
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-1')
+    #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
     W, b = load('block_4_2', f, 3)
     x = convolvetensor(x, W, b)
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-1')
+    #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
     W, b = load('block_4_4', f, 3)
     x = convolvetensor(x, W, b)
@@ -209,7 +208,7 @@ async def main():
     logging.info('- - - - - - - - maxpool - - - - - - -')
     x = maxpool(x)
     
-    await mpc.barrier('after-layer-4')
+    #await mpc.barrier('after-layer-4')
     
     logging.info('--------------- Block 5 -------------')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
@@ -217,12 +216,12 @@ async def main():
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-1')
+    #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
     W, b = load('block_5_2', f, 3)
     x = convolvetensor(x, W, b)
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-1')
+    #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
     W, b = load('block_5_4', f, 3)
     x = convolvetensor(x, W, b)
@@ -230,8 +229,7 @@ async def main():
     x = (x >= 0) * x
     logging.info('- - - - - - - - maxpool - - - - - - -')
     x = maxpool(x)
-    print(x.shape)
-    await mpc.barrier('after-layer-5')
+    #await mpc.barrier('after-layer-5')
     
     # Reshaping for Fully connected layer
     x = x.reshape(batch_size, 512)
@@ -242,7 +240,7 @@ async def main():
     x = x @ W + b
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-6')
+    #await mpc.barrier('after-layer-6')
     
     logging.info('--------------- LAYER 7 -------------')
     W, b = load('classifier_2', f, 4)
@@ -250,13 +248,13 @@ async def main():
     x = x @ W + b
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
-    await mpc.barrier('after-layer-7')
+    #await mpc.barrier('after-layer-7')
 
     logging.info('--------------- LAYER 8 -------------')
     W, b = load('classifier_4', f, 5)
     logging.info('- - - - - - - - fc 4096 x 10  - - - -')
     x = x @ W + b
-    await mpc.barrier('after-layer-8')
+    #await mpc.barrier('after-layer-8')
 
     #using arg max and printing output
     for i in range(batch_size):
