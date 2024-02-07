@@ -108,7 +108,7 @@ async def main():
     # if sysargv[1] is a fixed poijt number with .5 at the end fixed point values are used with 4 fractional bits and 10 integer bits
     # batch size is always number in front of decimal point
     k = 1 if len(sys.argv) == 1 else float(sys.argv[1])
-    ecnum = mpc.SecFxp(10, 4)
+    secnum = mpc.SecFxp(10, 4)
     batch_size = k
 
     await mpc.start()
@@ -118,7 +118,6 @@ async def main():
     f = 6
 
     logging.info('--------------- INPUT   -------------')
-    print(f'Type = {secnum.__name__}, range = ({offset}, {offset + batch_size})')
     labels=np.frombuffer(np.load('labels.npy'),dtype=np.ubyte)[0:batch_size].tolist()
     print('Labels:', labels)
     x = np.frombuffer(np.load('data.npy'), dtype=np.ubyte)[0:batch_size*28**2]/ 255
