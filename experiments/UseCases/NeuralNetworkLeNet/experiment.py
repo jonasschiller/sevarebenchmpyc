@@ -108,11 +108,8 @@ async def main():
     # if sysargv[1] is a fixed poijt number with .5 at the end fixed point values are used with 4 fractional bits and 10 integer bits
     # batch size is always number in front of decimal point
     k = 1 if len(sys.argv) == 1 else float(sys.argv[1])
-    if k - int(k) == 0.5:
-        secnum = mpc.SecFxp(10, 4)
-    else:
-        secnum = mpc.SecInt(37)
-    batch_size = round(k - 0.01)
+    ecnum = mpc.SecFxp(10, 4)
+    batch_size = k
 
     await mpc.start()
 
