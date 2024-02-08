@@ -1,7 +1,5 @@
 import numpy as np
 from mpyc.runtime import mpc
-from sklearn import datasets
-from sklearn.linear_model import LogisticRegression as LogisticRegressionSK
 import sys
 
 
