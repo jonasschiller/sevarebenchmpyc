@@ -79,32 +79,20 @@ async def logistic_regression_example():
         print("Usage: python experiment.py <n_samples> <n_features>")
     alpha = 0.1
 
-    # Create classification dataset
-    X, y = datasets.make_classification(
-        n_samples=n_samples,
-        n_features=n_features,
-        n_informative=1,
-        n_redundant=0,
-        n_classes=2,
-        n_clusters_per_class=1,
-        random_state=random_state,
-        shift=0,
-        weights=[0.25, 0.75],
-    )
-    
-    X = np.array(X)
-    y = np.array(y)
+    #use dummy input data
+    X=np.ones((n_samples, n_features))
+    y=np.ones(n_samples)
     #X_mpc, y_mpc = get_mpc_data(X, y)
     X_mpc = secnum.array(X)
     y_mpc = secnum.array(y)
     await mpc.start()
     # Perform training step of logistic regression
     weights= training(X_mpc, y_mpc, alpha, n_features,n_samples)
-    y_pred = predict(X_mpc, weights,n_samples)
-    y_pred = await mpc.output(y_pred)
-    accuracy = compute_accuracy(y_pred, y,n_samples)
+    #y_pred = predict(X_mpc, weights,n_samples)
+    #y_pred = await mpc.output(y_pred)
+    #accuracy = compute_accuracy(y_pred, y,n_samples)
     
-    print("Accuracy: ", accuracy)
+    #print("Accuracy: ", accuracy)
     await mpc.shutdown()
 
    
