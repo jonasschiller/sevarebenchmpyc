@@ -1,28 +1,3 @@
-"""Demo CNN MNIST classifier, vectorized.
-
-This demo is a fully equivalent reimplementation of the cnnmnist.py demo.
-However, this time using secure number arrays to perform all computations
-in a vectorized manner. For example, the ReLU activation at the end of a layer
-is done simply by updating state x to (x >= 0) * x. Here, x is a secure
-number (integer/fixed-point) array, which is first tested elementwise for
-nonnegativity; the resulting array of secret-shared bits is then multiplied
-elementwise with x itself.
-
-Apart from the simplicity, the performance for these array operations is
-also much better than what one gets for (nested) lists of secure numbers.
-Basically, the work and especially the communication is done in large batches,
-processing all array elements in one go. In contrast, for (nested) lists
-the elements are processed one by one in an uncoordinated manner, each time
-doing a small bit of work and communication.
-
-For this demo, we see an 18-fold speedup when run with three parties on
-local host (using secure fixed-point arithmetic). Also, the memory consumption
-is reduced accordingly, e.g., by a factor of around 10 when run with all
-barriers disabled.
-
-See cnnmnist.py for background information on the CNN MNIST classifier.
-"""
-
 import os
 import sys
 import logging
@@ -38,11 +13,9 @@ def scale_int(x, f2):
     return np.vectorize(round)(x * f2)
 
 
-def load(name, f, a=2):
-    W = np.load(os.path.join('data', 'lenet', 'W_' + name + '.npy'))
-    if name.startswith('conv'):
-        W = np.flip(W, axis=3)  # for use with np.convolve()
-    b = np.load(os.path.join('data', 'lenet', 'b_' + name + '.npy'))
+def load(W_shape,b_shape,f, a=2):
+    W = np.ones(W_shape)
+    b = np.ones(b_shape)
     if issubclass(secnum, mpc.SecureInteger):
         W = secnum.array(scale_int(W, 1 << f))
         b = secnum.array(scale_int(b, 1 << (a * f)))
@@ -118,10 +91,8 @@ async def main():
     f = 6
 
     logging.info('--------------- INPUT   -------------')
-    labels=np.frombuffer(np.load('labels.npy'),dtype=np.ubyte)[0:batch_size].tolist()
-    print('Labels:', labels)
-    x = np.frombuffer(np.load('data.npy'), dtype=np.ubyte)[0:batch_size*28**2]/ 255
-    x = np.reshape(x, (batch_size, 1, 28, 28))
+    labels=np.ones(batch_size)
+    x = np.ones((batch_size, 1, 28, 28))
     
     if issubclass(secnum, mpc.SecureInteger):
         x = secnum.array(scale_int(x, 1 << f))
@@ -130,7 +101,7 @@ async def main():
     #Logging info not necessarily required but helps
     #Load uses the weights of each layer and the biases
     #logging.info('--------------- LAYER 1 -------------')
-    W, b = load('conv1', f)
+    W, b = load((6, 1, 5, 5),(6),f)
     #logging.info('- - - - - - - - conv2d  - - - - - - -')
     x = convolvetensor(x, W, b)
     #logging.info('- - - - - - - - ReLU    - - - - - - -')
@@ -142,7 +113,7 @@ async def main():
     #await mpc.barrier('after-layer-1')
 
     #logging.info('--------------- LAYER 2 -------------')
-    W, b = load('conv2', f, 3)
+    W, b = load((16,6,5,5),(16), f, 3)
     #logging.info('- - - - - - - - conv2d  - - - - - - -')
     x = convolvetensor(x, W, b)
     #logging.info('- - - - - - - - ReLU    - - - - - - -')
@@ -158,7 +129,7 @@ async def main():
     x = x.reshape(batch_size, 7*7*16)
 
     #logging.info('--------------- LAYER 3 -------------')
-    W, b = load('fc1', f, 4)
+    W, b = load((784, 120),(120), f, 4)
     #logging.info('- - - - - - - - fc 256 x 120  - - -')
     x = x @ W + b
     if issubclass(secnum, mpc.SecureInteger):
@@ -168,7 +139,7 @@ async def main():
     #await mpc.barrier('after-layer-3')
 
     #logging.info('--------------- LAYER 4 -------------')
-    W, b = load('fc2', f, 5)
+    W, b = load((120,84),(84), f, 5)
     #logging.info('- - - - - - - - fc 120 x 84  - - - -')
     x = x @ W + b
     #logging.info('- - - - - - - - ReLU    - - - - - - -')
@@ -176,20 +147,13 @@ async def main():
     #await mpc.barrier('after-layer-4')
      
     #logging.info('--------------- LAYER 5 -------------')
-    W, b = load('fc3', f, 6)
+    W, b = load((84,10),(10), f, 6)
     #logging.info('- - - - - - - - fc 84 x 10  - - - -')
     x = x @ W + b
 
     #logging.info('--------------- OUTPUT  -------------')
     if issubclass(secnum, mpc.SecureInteger):
         secnum.bit_length = 37
-
-    #using arg max and printing output
-    for i in range(batch_size):
-        prediction = int(await mpc.output(np.argmax(x[i])))
-        error = '******* ERROR *******' if prediction != labels[i] else ''
-        print(f'Image #{offset+i} with label {labels[i]}: {prediction} predicted. {error}')
-        print(await mpc.output(x[i]))
 
     await mpc.shutdown()
 

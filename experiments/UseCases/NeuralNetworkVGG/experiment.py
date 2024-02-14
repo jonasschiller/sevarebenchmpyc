@@ -14,11 +14,9 @@ def scale_int(x, f2):
     return np.vectorize(round)(x * f2)
 
 
-def load(name, f, a=2):
-    W = np.load(os.path.join('data', 'vgg', 'W_' + name + '.npy'))
-    if name.startswith('conv'):
-        W = np.flip(W, axis=3)  # for use with np.convolve()
-    b = np.load(os.path.join('data', 'vgg', 'b_' + name + '.npy'))
+def load(W_shape,b_shape,f, a=2):
+    W = np.ones(W_shape)
+    b = np.ones(b_shape)
     if issubclass(secnum, mpc.SecureInteger):
         W = secnum.array(scale_int(W, 1 << f))
         b = secnum.array(scale_int(b, 1 << (a * f)))
@@ -52,7 +50,6 @@ async def convolvetensor(x, W, b):
         store_m, store_n = m, n
         m, n = s, s
         shape = (k, r, m, n)
-        print(x.shape)
     Y = np.zeros(shape, dtype=object)    
     s2 = (s-1) // 2
     for i in range(k):
@@ -68,7 +65,6 @@ async def convolvetensor(x, W, b):
         m, n = store_m, store_n
         Y = Y[:, :, :m, :n]
         shape = (k, v, m, n)
-        print(Y.shape)
     Y += b[:, np.newaxis, np.newaxis]
     Y = stype.sectype.field.array(Y)
     Y = mpc._reshare(Y)
@@ -104,7 +100,7 @@ async def main():
     # batch size is always number in front of decimal point
     k = 1 if len(sys.argv) == 1 else float(sys.argv[1])
     
-    secnum = mpc.SecFxp(10, 4)
+    secnum = mpc.SecFxp(32, 8)
     batch_size = int(k)
 
     await mpc.start()
@@ -116,33 +112,21 @@ async def main():
     logging.info('--------------- INPUT   -------------')
     # read batch_size labels and images at given offset
     # on local pc takes roughly 0.16 seconds could be optimized but not to important?
-    starttime=time.time()
-    df = unpickle('data/test_batch')
-    d = df[b'labels'][offset:offset + batch_size]
-    labels = list(map(int, d))
-    print('Labels:', labels)
-    df = unpickle('data/test_batch')
-    d = df[b'data'][offset:offset+batch_size]
     
-    endtime=time.time()
-    print(f'Elapsed time for reading labels and images: {endtime-starttime}')
+    x = np.ones((batch_size, 3, 32, 32))
     
-    x = np.array(d,np.ubyte)/ 255
-    x = np.reshape(x, (batch_size, 3, 32, 32))
-    if batch_size == 1:
-        print(np.array2string(np.vectorize(lambda a: int(bool(a)))(x[0, 0]), separator=''))
     x = secnum.array(x, integral=False)
     
     
     logging.info('--------------- Block 1 -------------')
-    W, b = load('block_1_0', f)
+    W, b = load((64, 3, 3, 3),(64), f)
     logging.info('- - - - - - - - conv2d  - - - - - - -')
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
     #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_1_2', f, 3)
+    W, b = load((64, 64, 3, 3),(64), f, 3)
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
@@ -152,13 +136,13 @@ async def main():
 
     logging.info('--------------- Block 2 -------------')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_2_0', f, 3)
+    W, b = load((128, 64, 3, 3),(128), f, 3)
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
     #await mpc.barrier('after-layer-2')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_2_2', f, 3)
+    W, b = load((128, 128, 3, 3),(128), f, 3)
     x = convolvetensor(x, W, b)
     x = (x >= 0) * x
     logging.info('- - - - - - - - maxpool - - - - - - -')
@@ -168,18 +152,18 @@ async def main():
     
     logging.info('--------------- Block 3 -------------')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_3_0', f, 3)
+    W, b = load((256, 128, 3, 3),(256), f, 3)
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
     #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_3_2', f, 3)
+    W, b = load((256, 256, 3, 3),(256), f, 3)
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_3_4', f, 3)
+    W, b = load((256, 256, 3, 3),(256), f, 3)
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
@@ -190,18 +174,18 @@ async def main():
     
     logging.info('--------------- Block 4 -------------')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_4_0', f, 3)
+    W, b = load((512, 256, 3, 3),(512), f, 3)
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
     #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_4_2', f, 3)
+    W, b = load((512, 512, 3, 3),(512), f, 3)
     x = convolvetensor(x, W, b)
     x = (x >= 0) * x
     #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_4_4', f, 3)
+    W, b = load((512, 512, 3, 3),(512), f, 3)
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
@@ -212,18 +196,18 @@ async def main():
     
     logging.info('--------------- Block 5 -------------')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_5_0', f, 3)
+    W, b = load((512, 512, 3, 3),(512),f, 3)
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
     #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_5_2', f, 3)
+    W, b = load((512, 512, 3, 3),(512), f, 3)
     x = convolvetensor(x, W, b)
     x = (x >= 0) * x
     #await mpc.barrier('after-layer-1')
     logging.info('- - - - - - - - conv2d  - - - - - - -')
-    W, b = load('block_5_4', f, 3)
+    W, b = load((512, 512, 3, 3),(512), f, 3)
     x = convolvetensor(x, W, b)
     logging.info('- - - - - - - - ReLU    - - - - - - -')
     x = (x >= 0) * x
@@ -235,7 +219,7 @@ async def main():
     x = x.reshape(batch_size, 512)
 
     logging.info('--------------- LAYER 6 -------------')
-    W, b = load('classifier_0', f, 4)
+    W, b = load((512,4096),(4096), f, 4)
     logging.info('- - - - - - - - fc 512 x 4096  - - -')
     x = x @ W + b
     logging.info('- - - - - - - - ReLU    - - - - - - -')
@@ -243,7 +227,7 @@ async def main():
     #await mpc.barrier('after-layer-6')
     
     logging.info('--------------- LAYER 7 -------------')
-    W, b = load('classifier_2', f, 4)
+    W, b = load((4096,4096),(4096), f, 4)
     logging.info('- - - - - - - - fc 4096 x 4096  - - -')
     x = x @ W + b
     logging.info('- - - - - - - - ReLU    - - - - - - -')
@@ -251,18 +235,13 @@ async def main():
     #await mpc.barrier('after-layer-7')
 
     logging.info('--------------- LAYER 8 -------------')
-    W, b = load('classifier_4', f, 5)
+    W, b = load((4096,10),(10), f, 5)
     logging.info('- - - - - - - - fc 4096 x 10  - - - -')
     x = x @ W + b
     #await mpc.barrier('after-layer-8')
-
+    x=np.argmax(x, axis=1)
+    await mpc.output(x[-1])
     #using arg max and printing output
-    for i in range(batch_size):
-        prediction = int(await mpc.output(np.argmax(x[i])))
-        error = '******* ERROR *******' if prediction != labels[i] else ''
-        print(f'Image #{offset+i} with label {labels[i]}: {prediction} predicted. {error}')
-        print(await mpc.output(x[i]))
-
     await mpc.shutdown()
 
 if __name__ == '__main__':
