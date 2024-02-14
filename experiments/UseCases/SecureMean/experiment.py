@@ -28,13 +28,8 @@ async def main():
     data = np.ones(int(input_size), dtype=np.int32)
     data = secarray(data)
     await mpc.start()
-    total_sum = mpc.sum(list(data))
-    min_val, max_val = mpc.min_max(data)
     avg = mpyc.statistics.mean(list(data))
 
-    print('Sum:', await mpc.output(total_sum))
-    print('Maximum:', await mpc.output(max_val))
-    print('Minimum:', await mpc.output(min_val))
     print('Average:', await mpc.output(avg))
 
     await mpc.shutdown()
