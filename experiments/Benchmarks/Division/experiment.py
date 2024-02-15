@@ -5,11 +5,11 @@ async def main():
     
     import sys
 
-    # Get the first argument from the command line
-    arg = sys.argv[1]
-
-    # Convert the argument to an integer
-    size = int(arg)
+    if len(sys.argv) > 1:
+        size = int(sys.argv[1])
+    else:
+        size=10000
+        print("No argument provided.")
 
     # Rest of the code...
     # Securely multiply the arrays using mpyc

@@ -2,7 +2,12 @@ from mpyc.runtime import mpc
 import numpy as np
 
 async def main():
-    intarray=np.ones(10000,np.int64)
+    if len(sys.argv) > 1:
+        size = int(sys.argv[1])
+    else:
+        size=10000
+        print("No argument provided.")
+    intarray=np.ones(size,np.int32)
     secnum = mpc.SecInt(32)
     # Securely multiply the arrays using mpyc
     await mpc.start()

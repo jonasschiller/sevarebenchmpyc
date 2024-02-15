@@ -4,7 +4,11 @@
 import numpy as np
 from mpyc.runtime import mpc
 async def main():
-    size=10000
+    if len(sys.argv) > 1:
+        size = int(sys.argv[1])
+    else:
+        size=10000
+        print("No argument provided.")
     intarray=np.ones(size,dtype=int)
     secnum = mpc.SecInt(1)
     await mpc.start()
