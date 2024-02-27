@@ -1,6 +1,7 @@
 from mpyc.runtime import mpc
 import mpyc.gmpy as gmpy2
 import numpy as np
+import sys
 
 async def main():
     if len(sys.argv) > 1:
