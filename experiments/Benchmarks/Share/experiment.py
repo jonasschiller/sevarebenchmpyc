@@ -1,6 +1,7 @@
 # Bitwise operation for 1.000.000 leads to a system fautlt due to too much RAM usage
 import numpy as np
 from mpyc.runtime import mpc
+import sys
 async def main():
     if len(sys.argv) > 1:
         size = int(sys.argv[1])

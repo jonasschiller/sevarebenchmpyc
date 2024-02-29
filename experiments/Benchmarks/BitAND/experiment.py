@@ -3,6 +3,7 @@
 # We do 100000 instead
 import numpy as np
 from mpyc.runtime import mpc
+import sys
 async def main():
     if len(sys.argv) > 1:
         size = int(sys.argv[1])

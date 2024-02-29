@@ -1,9 +1,8 @@
 import numpy as np
 from mpyc.runtime import mpc
 import mpyc.gmpy as gmpy2
+import sys
 async def main():
-    
-    import sys
 
     if len(sys.argv) > 1:
         size = int(sys.argv[1])

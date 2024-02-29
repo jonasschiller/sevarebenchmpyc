@@ -1,6 +1,7 @@
 # Reveal 1000000 integers
 import numpy as np
 from mpyc.runtime import mpc
+import sys
 async def main():
     if len(sys.argv) > 1:
         size = int(sys.argv[1])
