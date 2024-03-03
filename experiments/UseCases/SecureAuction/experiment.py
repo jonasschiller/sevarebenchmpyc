@@ -50,7 +50,7 @@ async def main():
         print("No argument provided.")
     await mpc.start() 
 
-    price=await ComputeClearingPrice( price_range,input_size)
+    price=await ComputeClearingPrice(price_range,input_size)
     print(await mpc.output(price)) 
     await mpc.shutdown()
     

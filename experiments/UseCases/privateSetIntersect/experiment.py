@@ -26,7 +26,6 @@ async def main():
     
     x = list(map(secnum, input1+input2))  # secret input
     async with mpc:
-        mpc.random.shuffle(secnum, x)  # secret in-place random shuffle
         x = mpc.sorted(x)  # sort on absolute value
         for i in range(0,len(x),2):
             x[i]=mpc.if_else(x[i] == x[i + 1], x[i], 0)
