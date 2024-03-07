@@ -38,7 +38,7 @@ exportExperimentResults() {
 
     # generate header line of data dump with column information
     basicInfo1="program;partysize;"
-    basicInfo2="${dyncolumns}runtime_internal(s);Bytes Send;runtime_external(s);peakRAM(MiB);System Time(s)"
+    basicInfo2="${dyncolumns}runtime_internal(s);Bytes Send;runtime_external(s);peakRAM(MiB);System Time(s);jobCPU(%)"
     
     echo -e "${basicInfo1}${basicInfo2}" > "$datatableShort"
 
@@ -76,6 +76,7 @@ exportExperimentResults() {
         maxRAMused=$(grep "Maximum resident" "$runtimeinfo" | cut -d ' ' -f 1)
         [ -n "$maxRAMused" ] && maxRAMused="$((maxRAMused/1024))"
         systemTime=$(grep "System time" "$runtimeinfo" | cut -d ' ' -f 1)
+        jobCPU=$(grep "CPU this job" "$runtimeinfo" | awk '{print $1}')
         # put all collected info into one row (Short)
         basicInfo="${EXPERIMENT};$partysize"
         echo -e "$basicInfo;$loopvalues$runtimeint;$globaldataSent;$runtimeext;$maxRAMused;$systemTime" >> "$datatableShort"
