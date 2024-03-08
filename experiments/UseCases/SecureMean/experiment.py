@@ -23,12 +23,10 @@ async def main():
     else:
         print("No argument provided.")
     
-    secint = mpc.SecInt(32)
-    secarray = secint.array
-    data = np.ones(int(input_size), dtype=np.int32)
-    data = secarray(data)
+    secarray=mpc.SecFxp(32,8).array
+    input=secarray(np.ones(input_size,np.int32))
     await mpc.start()
-    avg = mpyc.statistics.mean(list(data))
+    avg = mpyc.statistics.mean(list(input))
 
     print('Average:', await mpc.output(avg))
 
