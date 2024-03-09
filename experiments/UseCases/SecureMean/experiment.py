@@ -19,12 +19,11 @@ import sys
 
 async def main():
     if len(sys.argv) > 1:
-        input_size = sys.argv[1]
+        input_size = int(sys.argv[1])
     else:
         print("No argument provided.")
-    
     secarray=mpc.SecFxp(32,8).array
-    input=secarray(np.ones(input_size,np.int32))
+    input=secarray(np.ones(input_size,np.float32))
     await mpc.start()
     avg = mpyc.statistics.mean(list(input))
 
