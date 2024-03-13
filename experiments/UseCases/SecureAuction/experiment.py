@@ -42,7 +42,7 @@ async def main():
     # Create market instance and test orders
     if len(sys.argv) == 2:
         input_size = int(sys.argv[1])
-        price_range= 50
+        price_range= 100
     elif len(sys.argv) == 3:
         input_size = int(sys.argv[1])
         price_range= int(sys.argv[2])
